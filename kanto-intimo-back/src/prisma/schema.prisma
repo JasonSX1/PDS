@@ -1,0 +1,10 @@
+model Vendedor {
+    idVendedor Int @id @default(autoincrement())
+    dataNasc DateTime @db.Date
+    idEndereco Endereco @relation(fields: [idEndereco], references: [idEndereco])
+    idEndereco Int 
+    nome String
+    email String @unique
+    telefone String @unique
+    cpf String @unique   
+}
