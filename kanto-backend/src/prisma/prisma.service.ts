@@ -1,4 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class PrismaService {}
+// eslint-disable-next-line prettier/prettier
+export class PrismaService {
+  seller: any;
+}
