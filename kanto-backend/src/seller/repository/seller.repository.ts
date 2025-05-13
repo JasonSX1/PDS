@@ -67,7 +67,13 @@ export class SellerRepository {
         cpf: dto.cpf,
         birthDate: new Date(dto.birthDate),
         address: {
-          create: dto.address,
+          create: {
+            zipCode: dto.address.zipCode,
+            street: dto.address.street,
+            number: dto.address.number,
+            city: dto.address.city,
+            state: dto.address.state
+          }
         },
       },
       include: {

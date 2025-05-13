@@ -11,7 +11,7 @@ import { Type } from 'class-transformer';
 class AddressDto {
   @IsNotEmpty({ message: 'O CEP não pode ser vazio.' })
   @IsString({ message: 'O CEP deve ser uma string.' })
-  cep: string;
+  zipCode: string;
 
   @IsNotEmpty({ message: 'A rua não pode ser vazia.' })
   @IsString({ message: 'A rua deve ser uma string.' })
@@ -20,14 +20,6 @@ class AddressDto {
   @IsNotEmpty({ message: 'O número não pode ser vazio.' })
   @IsString({ message: 'O número deve ser uma string.' })
   number: string;
-
-  @IsOptional()
-  @IsString({ message: 'O complemento deve ser uma string.' })
-  complement?: string;
-
-  @IsNotEmpty({ message: 'O bairro não pode ser vazio.' })
-  @IsString({ message: 'O bairro deve ser uma string.' })
-  neighborhood: string;
 
   @IsNotEmpty({ message: 'A cidade não pode ser vazia.' })
   @IsString({ message: 'A cidade deve ser uma string.' })

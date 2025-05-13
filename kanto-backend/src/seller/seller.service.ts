@@ -1,11 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Injectable } from '@nestjs/common';
+import { SellerRepository } from './repository/seller.repository';
 import { CreateSellerDto } from './dto/create-seller.dto';
 import { UpdateSellerDto } from './dto/update-seller.dto';
 
 @Injectable()
-export class SellerRepository {
-  constructor(private readonly prisma: PrismaService) {}
+export class SellerService {
+  constructor(private readonly repository: SellerRepository) {}
 
   async paginate(
     page: number,
@@ -14,88 +14,43 @@ export class SellerRepository {
     order: 'asc' | 'desc',
     search: string,
   ) {
-    const results = await this.prisma.seller.findMany({
-      skip: page * size,
-      take: Number(size),
-      where: {
-        name: {
-          contains: search,
-          mode: 'insensitive',
-        },
-      },
-      orderBy: {
-        [sort]: order,
-      },
-      include: {
-        address: true,
-      },
-    });
+    const { results, totalItems } = await this.repository.paginate(
+      page,
+      size,
+      sort,
+      order,
+      search,
+    );
 
-    const totalItems = await this.prisma.seller.count({
-      where: {
-        name: {
-          contains: search,
-          mode: 'insensitive',
-        },
-      },
-    });
+    const totalPages = Math.ceil(totalItems / size) - 1;
+    const currentPage = Number(page);
 
-    return { results, totalItems };
+    return {
+      results,
+      pagination: {
+        length: totalItems,
+        size: size,
+        lastPage: totalPages,
+        page: currentPage,
+        startIndex: currentPage * size,
+        endIndex: size + (size - 1),
+      },
+    };
   }
 
   async findById(id: number) {
-    const seller = await this.prisma.seller.findUnique({
-      where: { id },
-      include: {
-        address: true,
-      },
-    });
-
-    if (!seller) {
-      throw new NotFoundException('Esse vendedor não existe');
-    }
-
-    return seller;
+    return await this.repository.findById(id);
   }
 
   async create(dto: CreateSellerDto) {
-    return await this.prisma.seller.create({
-      data: {
-        name: dto.name,
-        email: dto.email,
-        phone: dto.phone,
-        cpf: dto.cpf,
-        birthDate: new Date(dto.birthDate),
-        address: {
-          create: dto.address,
-        },
-      },
-      include: {
-        address: true,
-      },
-    });
+    return await this.repository.create(dto);
   }
 
   async update(id: number, dto: UpdateSellerDto) {
-    return await this.prisma.seller.update({
-      where: { id },
-      data: {
-        name: dto.name,
-        email: dto.email,
-        phone: dto.phone,
-        cpf: dto.cpf,
-        birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
-        address: dto.address ? { update: dto.address } : undefined,
-      },
-      include: {
-        address: true,
-      },
-    });
+    return await this.repository.update(id, dto);
   }
 
   async remove(id: number) {
-    return await this.prisma.seller.delete({
-      where: { id },
-    });
+    return await this.repository.remove(id);
   }
 }
