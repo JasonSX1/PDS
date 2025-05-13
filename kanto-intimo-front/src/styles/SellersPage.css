@@ -1,5 +1,3 @@
-/* SellersPage.css */
-
 .sellers-container {
   min-height: 100vh;
   background-color: #f4f4f5;
@@ -8,38 +6,41 @@
   font-family: sans-serif;
 }
 
-.sellers-title {
-  font-size: 1.25rem;
-  font-weight: bold;
-  margin-bottom: 24px;
+.sellers-header {
+  display: flex;
+  justify-content: center;
+  gap: 64px;
+  margin-bottom: 16px;
+  font-weight: 500;
 }
 
 .sellers-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
+  margin: 0 auto;
   background-color: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
-  overflow: hidden;
+  font-size: 14px;
 }
 
 .sellers-table th,
 .sellers-table td {
-  border: 1px solid #e4e4e7;
+  border: 1px solid #d4d4d8;
   padding: 12px;
   text-align: left;
-  font-size: 0.875rem;
 }
 
 .sellers-table th {
   background-color: #f4f4f5;
   font-weight: 500;
-  color: #27272a;
 }
 
-.sellers-table td {
-  background-color: #fff;
+.seller-name-link {
+  color: #f59e0b; /* Amarelo igual da imagem */
+  text-decoration: none;
+}
+
+.seller-name-link:hover {
+  text-decoration: underline;
 }
 
 .icon-button {
@@ -47,12 +48,6 @@
   border: none;
   cursor: pointer;
   margin-right: 8px;
-  padding: 4px;
-  transition: transform 0.2s ease;
-}
-
-.icon-button:hover {
-  transform: scale(1.1);
 }
 
 .icon-button.delete {
@@ -63,42 +58,57 @@
   color: #4b5563;
 }
 
-.pagination {
+.icon-button.more {
+  color: #4b5563;
+}
+
+.actions-cell {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-top: 24px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #27272a;
+  justify-content: flex-end;
 }
 
-/* Estilo de campo de busca (caso exista) */
-.sellers-search {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 50%;
-  margin-bottom: 24px;
-}
-
-.search-input {
-  flex-grow: 1;
-  padding: 8px;
-  border: 1px solid #d4d4d8;
-  border-radius: 4px;
-  background-color: #fff;
-}
-
-.search-icon {
-  width: 20px;
-  height: 20px;
+.no-sellers {
+  text-align: center;
+  padding: 24px;
+  font-style: italic;
   color: #71717a;
 }
 
-.sellers-nav-buttons {
+.pagination {
   display: flex;
   align-items: center;
-  justify-content: space-evenly;
-  margin-bottom: 32px;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.pagination span {
+  font-size: 14px;
+}
+
+.pagination button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #27272a;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.pagination button:disabled {
+  color: #000000;
+  cursor: not-allowed;
+}
+
+.update-button {
+  padding: 8px 24px;
+  border: 1px solid #27272a;
+  background-color: #fff;
+  color: #27272a;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-left: 40px;
 }
