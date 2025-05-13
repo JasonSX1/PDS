@@ -1,0 +1,47 @@
+.sellers-container {
+  padding: 24px;
+}
+
+.sellers-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.sellers-table th,
+.sellers-table td {
+  border: 1px solid #d4d4d8;
+  padding: 12px;
+  text-align: left;
+}
+
+.sellers-table th {
+  background-color: #f4f4f5;
+  font-size: 14px;
+}
+
+.sellers-table td {
+  background-color: #fff;
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 8px;
+}
+
+.icon-button.delete {
+  color: red;
+}
+
+.icon-button.edit {
+  color: #4b5563;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+}

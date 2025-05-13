@@ -1,42 +1,54 @@
-# Vite + Vue 3 + Typescript + Tailwind Starter
+# React + TypeScript + Vite
 
-Oopinionated, **fully typed**, and **production-ready** project template for Vite.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-The goal of this template is to be **practical** and **batteries included** starting point for both quick experiments and projects designed for production quality.
+Currently, two official plugins are available:
 
-Includes plenty of **examples and documentation** of how to do things but **minimal cruft** to delete to get you going.
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-Please [check out the homepage](https://vite-ts-tailwind-starter.vercel.app/) for full docs. A [detailed changelog](./CHANGES.md) is available.
+## Expanding the ESLint configuration
 
-## Features
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
-- **Vue 3** with [Pinia](https://pinia.vuejs.org/) store and [vue-router](https://router.vuejs.org/) routing
-- **Automatic imports** via [unplugin-auto-import](https://github.com/antfu/unplugin-auto-import)
-- **Tailwind CSS** with the official `typography` plugin, plus **automatic icons** using [@egoist/tailwindcss-icons](https://github.com/egoist/tailwindcss-icons)
-- **Comprehensive tooling** configs for TypeScript, PostCSS, Eslint, Biome, Prettier, EditorConfig and recommended settings and configs for VSCode
-- **Full testing setup** using Vitest (components) and Playwright (e2e) together with Github Actions for CI/CD including [code coverage reporting](https://github.com/Uninen/vite-ts-tailwind-starter/pull/279#issuecomment-2435516534) in PRs.
+```js
+export default tseslint.config({
+  extends: [
+    // Remove ...tseslint.configs.recommended and replace with this
+    ...tseslint.configs.recommendedTypeChecked,
+    // Alternatively, use this for stricter rules
+    ...tseslint.configs.strictTypeChecked,
+    // Optionally, add this for stylistic rules
+    ...tseslint.configs.stylisticTypeChecked,
+  ],
+  languageOptions: {
+    // other options...
+    parserOptions: {
+      project: ['./tsconfig.node.json', './tsconfig.app.json'],
+      tsconfigRootDir: import.meta.dirname,
+    },
+  },
+})
+```
 
-### Code Features / Opinions
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-- Project root aliased as `@` (`import { myUtilsThing } from @/utils/mylib`)
-- Router instance available in the store: `this.router.push('/')`
-- Any of 100000+ Iconify icons available as Tailwind classes: `<span class="i-mdi-home"></span>`
-- Predefined and fully typed global variables:
-  - `VITE_APP_VERSION` is read from `package.json` version at build time and stored to the store as `store.appMeta.version`
-  - `VITE_APP_BUILD_EPOCH` is populated as `new Date().getTime()` at build time and stored to the store as `store.appMeta.buildTime`
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
 
-### Very Fast (TM) To Reset
-
-1. Delete `src/components/HelloWorld.vue` and `src/components/__tests__/HelloWorld.spec.ts`
-2. Delete the content from `@/pages/IndexPage.vue`
-3. Delete demo styles from `@/assets/base.css`
-4. Profit!11
-
-## Elsewhere
-
-- Follow [unessa.net on Bluesky](https://bsky.app/profile/uninen.net) or [@uninen on Twitter](https://twitter.com/uninen)
-- Read my continuously updating learnings from Vite / Vue / TypeScript and other Web development topics from my [Today I Learned site](https://til.unessa.net/)
-
-## Contributing
-
-Contributions are welcome! Please follow the [code of conduct](./CODE_OF_CONDUCT.md) when interacting with others.
+export default tseslint.config({
+  plugins: {
+    // Add the react-x and react-dom plugins
+    'react-x': reactX,
+    'react-dom': reactDom,
+  },
+  rules: {
+    // other rules...
+    // Enable its recommended typescript rules
+    ...reactX.configs['recommended-typescript'].rules,
+    ...reactDom.configs.recommended.rules,
+  },
+})
+```
