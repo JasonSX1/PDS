@@ -43,20 +43,22 @@ export class SellerRepository {
     return { results, totalItems };
   }
 
-  async findById(id: number) {
-    const seller = await this.prisma.seller.findUnique({
-      where: { id },
-      include: {
-        address: true,
-      },
-    });
-
-    if (!seller) {
-      throw new NotFoundException('Esse vendedor não existe');
+async findById(id: number) {
+  const seller = await this.prisma.seller.findUnique({
+    where: {
+      id: id
+    },
+    include: {
+      address: true
     }
+  });
 
-    return seller;
+  if (!seller) {
+    throw new NotFoundException('Esse vendedor não existe');
   }
+
+  return seller;
+}
 
   async create(dto: CreateSellerDto) {
     return await this.prisma.seller.create({

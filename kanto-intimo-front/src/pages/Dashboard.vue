@@ -3,19 +3,35 @@ import MenuCard from '../components/MenuCard.vue'
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 px-6 py-8" >
+  <div class="min-h-screen bg-white-50 px-6 py-8" >
 
-    <header class="w-full flex items-center justify-between px-6 py-4 pb-15">
-    <div class="text-2xl font-bold text-gray-900">ERP Kanto <br> Íntimo</div>
+    <header class="w-full flex items-center justify-between py-4 pb-15">
+      <!-- Agrupamento do logo e texto à esquerda -->
+      <div class="flex items-center">
+        <img 
+          src="@/assets/logo.png" 
+          alt="Logo Kanto" 
+          class="h-16 mr-3"
+        />
+        <div class="text-xl font-bold text-gray-900">
+          <div>ERP</div>
+          <div>Kanto</div>
+          <div>Íntimo</div>
+        </div>
+      </div>
 
-    <div class="flex-1 flex justify-center">
-      <input
-        type="text"
-        placeholder="Pesquisa"
-        class="border px-4 py-2 rounded-md w-64 text-sm"
-      />
-    </div>
-</header>
+      <!-- Barra de pesquisa centralizada -->
+      <div class="flex-grow flex justify-center">
+        <input
+          type="text"
+          placeholder="Pesquisa"
+          class="border px-4 py-2 rounded-md w-64 text-sm"
+        />
+      </div>
+      
+      <!-- Espaço vazio à direita para manter o equilíbrio -->
+      <div class="w-32"></div>
+    </header>
 
 
     <!-- Navegação -->
