@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/SellersPage.css';
+import Header from "../components/ui/header";
+import Navbar from "../components/ui/navbar";
 import { Trash2, Pencil } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -25,8 +27,12 @@ function SellersPage() {
 
   return (
     <div className="sellers-container">
-      <h2>Cadastrar Vendedor</h2>
-      <h3>Visualizar Vendedor</h3>
+      <Header />
+      <Navbar />
+      <div className="sellers-nav-buttons">
+        <h2>Cadastrar Vendedor</h2>
+        <h3>Visualizar Vendedor</h3>
+      </div> 
       <table className="sellers-table">
         <thead>
           <tr>

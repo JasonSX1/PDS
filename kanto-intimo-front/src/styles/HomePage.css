@@ -64,6 +64,8 @@
 .nav-item {
   cursor: pointer;
   transition: text-decoration 0.2s ease;
+  color: #27272a;
+  text-decoration: none;
 }
 
 .nav-item:hover {
