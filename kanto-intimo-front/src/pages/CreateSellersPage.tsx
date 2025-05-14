@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import "../styles/SellersPage.css";
+import "../styles/CreateSellersPage.css";
 import Header from "../components/ui/header";
 import Navbar from "../components/ui/navbar";
 import DatePicker from "react-datepicker";
