@@ -1,15 +1,15 @@
 /* CreateSellersPage.css */
 
 /* Reaproveitando estilos gerais do HomePage.css */
-.sellers-container { /* Mantendo este nome por enquanto, pode ser renomeado se necessário */
+.sellers-container {
   min-height: 100vh;
-  background-color: #f4f4f5; /* Cor de fundo semelhante à da homepage */
-  color: #27272a; /* Cor do texto semelhante à da homepage */
-  padding: 24px; /* Padding semelhante ao da homepage */
-  font-family: sans-serif; /* Fonte semelhante à da homepage */
+  background-color: #f4f4f5;
+  color: #27272a;
+  padding: 24px;
+  font-family: sans-serif;
 }
 
-.sellers-header { /* Estilo para os tabs de navegação */
+.sellers-header {
   display: flex;
   justify-content: center;
   gap: 64px;
@@ -41,19 +41,30 @@
 .input-group {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap; /* Added to allow items to wrap on smaller screens */
 }
 
 .seller-form input,
 .seller-form .datepicker-input {
   padding: 12px;
-  border: 1px solid #d4d4d8; /* Cor da borda semelhante à da homepage */
+  border: 1px solid #d4d4d8;
   border-radius: 6px;
   font-size: 14px;
+  box-sizing: border-box; /* Important for width consistency */
+  flex: 1; /* Make inputs grow to fill available space */
+  min-width: 0; /* Important to allow flex-basis to work correctly */
+}
+
+/* Target the name and lastname inputs specifically */
+.seller-form input[name="name"],
+.seller-form input[name="lastName"]{
+    flex: 1;
+    min-width: 0;
 }
 
 .submit-button {
   margin-top: 20px;
-  background-color: #22c55e; /* Cor do botão semelhante ao tema */
+  background-color: #22c55e;
   color: white;
   border: none;
   padding: 12px;
@@ -64,40 +75,50 @@
 }
 
 .submit-button:hover {
-  background-color: #16a34a; /* Cor do hover do botão */
+  background-color: #16a34a;
 }
 
 .address-group {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   width: 100%;
   margin-bottom: 12px;
+  flex-wrap: wrap; /* added */
+  align-items: flex-start; /* added -  align items to the start of the container */
 }
 
 .address-group input {
-  width: 50%;
+  width: 100%; /* Default width for all address inputs */
   box-sizing: border-box;
+  flex: 1;
+  min-width: 0;
 }
 
 .address-group input[name="zipCode"] {
-  max-width: calc(50% - 8px);
+  max-width: calc(50% - 6px); /* Adjusted for the gap */
+  flex: none; /* prevent zipCode from growing */
 }
 
-.address-group > div {
+/* New rule to make CEP and Estado be on the same line */
+.address-group .cep-estado-group {
+  display: flex;
+  gap: 12px;
   flex: 1;
+  min-width: 0;
+  flex-wrap: nowrap; /* prevent wrapping */
+  width: 100%; /* added */
 }
-
-.address-group > div input[name="state"] {
-  width: 100%;
-  box-sizing: border-box;
+.address-group .cep-estado-group input{
+    flex: 1;
+    min-width: 0;
 }
 
 .seller-form label {
   display: block;
   margin-bottom: 4px;
   text-align: center;
-  font-size: 14px; /* Tamanho da fonte semelhante ao da homepage */
-  color: #6b7280; /* Cor do texto semelhante ao da homepage */
+  font-size: 14px;
+  color: #6b7280;
 }
 
 .datepicker-input {
@@ -105,4 +126,6 @@
   border: 1px solid #d4d4d8;
   border-radius: 6px;
   box-sizing: border-box;
+  flex: 1;
+  min-width: 0;
 }

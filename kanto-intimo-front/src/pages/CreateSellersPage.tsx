@@ -315,64 +315,68 @@ export default function CreateSellersPage() {
 
         <label style={{ marginTop: 16, textAlign: 'center', display: 'block' }}>Endereço</label>
         <div className="address-group">
-          <input
-            name="zipCode"
-            placeholder="CEP (99999-999)"
-            value={formData.address.zipCode}
-            onChange={handleChange}
-            maxLength={9}
-            required
-          />
-          <div style={{ position: 'relative', flex: 1 }}>
+          <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
             <input
-              name="state"
-              placeholder="Estado (sigla)"
-              value={formData.address.state}
+              name="zipCode"
+              placeholder="CEP (99999-999)"
+              value={formData.address.zipCode}
               onChange={handleChange}
-              maxLength={2}
+              maxLength={9}
               required
-              onFocus={() => setShowSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+              style={{ flex: 1, minWidth: '0' }}
             />
-            {showSuggestions && suggestions.length > 0 && (
-              <ul style={{ position: 'absolute', zIndex: 1000, listStyle: 'none', padding: 0, margin: 0, backgroundColor: 'white', border: '1px solid #ddd', width: '100%', maxHeight: '200px', overflowY: 'auto' }}>
-                {suggestions.map((estado, index) => (
-                  <li
-                    key={index}
-                    style={{ padding: '8px', cursor: 'pointer', borderBottom: '1px solid #eee' }}
-                    onMouseDown={() => handleSuggestionClick(estado)}
-                  >
-                    {estado}
-                  </li>
-                ))}
-              </ul>
-            )}
+            <div style={{ position: 'relative', flex: 2, minWidth: '0' }}> {/* Alterado flex para 2 */}
+              <input
+                name="state"
+                placeholder="Estado (sigla)"
+                value={formData.address.state}
+                onChange={handleChange}
+                maxLength={2}
+                required
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                style={{ flex: 2, minWidth: '0' }}  // Mantive flex: 2 aqui também
+              />
+              {showSuggestions && suggestions.length > 0 && (
+                <ul style={{ position: 'absolute', zIndex: 1000, listStyle: 'none', padding: 0, margin: 0, backgroundColor: 'white', border: '1px solid #ddd', width: '100%', maxHeight: '200px', overflowY: 'auto' }}>
+                  {suggestions.map((estado, index) => (
+                    <li
+                      key={index}
+                      style={{ padding: '8px', cursor: 'pointer', borderBottom: '1px solid #eee' }}
+                      onMouseDown={() => handleSuggestionClick(estado)}
+                    >
+                      {estado}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
+          <input
+            name="street"
+            placeholder="Rua"
+            value={formData.address.street}
+            onChange={handleChange}
+            required
+            maxLength={100}
+          />
+          <input
+            name="number"
+            placeholder="Número"
+            value={formData.address.number}
+            onChange={handleChange}
+            required
+            maxLength={10}
+          />
+          <input
+            name="city"
+            placeholder="Cidade"
+            value={formData.address.city}
+            onChange={handleChange}
+            required
+            maxLength={50}
+          />
         </div>
-        <input
-          name="street"
-          placeholder="Rua"
-          value={formData.address.street}
-          onChange={handleChange}
-          required
-          maxLength={100}
-        />
-        <input
-          name="number"
-          placeholder="Número"
-          value={formData.address.number}
-          onChange={handleChange}
-          required
-          maxLength={10}
-        />
-        <input
-          name="city"
-          placeholder="Cidade"
-          value={formData.address.city}
-          onChange={handleChange}
-          required
-          maxLength={50}
-        />
 
         {error && <div style={{ color: "red", marginTop: 12 }}>{error}</div>}
 
@@ -383,3 +387,4 @@ export default function CreateSellersPage() {
     </div>
   );
 }
+

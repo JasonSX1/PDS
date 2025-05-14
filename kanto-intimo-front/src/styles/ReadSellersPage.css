@@ -400,3 +400,71 @@
   margin-bottom: 15px;
   border-radius: 4px;
 }
+
+/* Estilos para o overlay do modal de confirmação de exclusão */
+.delete-confirmation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Fundo semi-transparente */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1010; /* Garante que fique acima do modal de edição, se aberto */
+}
+
+/* Estilos para o modal de confirmação de exclusão */
+.delete-confirmation-modal {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 400px; /* Largura máxima do modal de confirmação */
+  text-align: center;
+}
+
+.delete-confirmation-modal h2 {
+  color: #d9534f; /* Vermelho para indicar perigo */
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.delete-confirmation-modal p {
+  margin-bottom: 10px;
+}
+
+.delete-confirmation-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.delete-confirmation-buttons button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.delete-confirmation-buttons .cancel-button {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.delete-confirmation-buttons .delete-button {
+  background-color: #d9534f; /* Vermelho para excluir */
+  color: white;
+}
+
+.delete-confirmation-buttons .cancel-button:hover {
+  background-color: #e0e0e0;
+}
+
+.delete-confirmation-buttons .delete-button:hover {
+  background-color: #c9302c;
+}

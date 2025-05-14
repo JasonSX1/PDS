@@ -66,6 +66,8 @@ function ReadSellersPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const [editError, setEditError] = useState<string>('');
   const [deleteSuccessMessage, setDeleteSuccessMessage] = useState<string>('');
+  const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState<boolean>(false);
+  const [sellerToDelete, setSellerToDelete] = useState<Seller | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -203,16 +205,26 @@ function ReadSellersPage() {
     }
   };
 
-  const handleDeleteSeller = async (id: number) => {
-    if (window.confirm('Tem certeza que deseja excluir este vendedor?')) {
-      try {
-        const response = await api.delete(`/seller/${id}`);
+  const openDeleteConfirmation = (seller: Seller) => {
+    setSellerToDelete(seller);
+    setIsDeleteConfirmationOpen(true);
+  };
 
-        if (response.status === 204 || response.status === 200) { // Considera 200 como sucesso também
-          const updatedSellers = sellers.filter(seller => seller.id !== id);
+  const closeDeleteConfirmation = () => {
+    setSellerToDelete(null);
+    setIsDeleteConfirmationOpen(false);
+  };
+
+  const handleDeleteSeller = async () => {
+    if (sellerToDelete) {
+      try {
+        const response = await api.delete(`/seller/${sellerToDelete.id}`);
+
+        if (response.status === 204 || response.status === 200) {
+          const updatedSellers = sellers.filter(s => s.id !== sellerToDelete.id);
           setSellers(updatedSellers);
           setDeleteSuccessMessage('Vendedor excluído com sucesso!');
-          setTimeout(() => setDeleteSuccessMessage(''), 3000); // Limpa a mensagem após 3 segundos
+          setTimeout(() => setDeleteSuccessMessage(''), 3000);
         } else {
           console.error('Erro ao excluir vendedor:', response.data);
           alert('Erro ao excluir vendedor.');
@@ -220,6 +232,8 @@ function ReadSellersPage() {
       } catch (error: any) {
         console.error('Erro ao enviar exclusão:', error);
         alert('Erro ao excluir vendedor.');
+      } finally {
+        closeDeleteConfirmation();
       }
     }
   };
@@ -258,7 +272,7 @@ function ReadSellersPage() {
               <div>N/A</div>
               <div>N/A</div>
               <div className="actions-cell">
-                <button className="icon-button delete" onClick={() => handleDeleteSeller(seller.id)}><Trash2 size={16} /></button>
+                <button className="icon-button delete" onClick={() => openDeleteConfirmation(seller)}><Trash2 size={16} /></button>
                 <button className="icon-button edit" onClick={() => openEditModal(seller.id)}><Pencil size={16} /></button>
                 <button className="icon-button more"><MoreVertical size={16} /></button>
               </div>
@@ -269,42 +283,41 @@ function ReadSellersPage() {
         )}
       </div>
 
-    {isEditModalOpen && editingSeller && (
-      <div className="edit-modal-overlay">
-        <div className="edit-modal">
-          <div className="edit-modal-header">
-            <h2>Editar Vendedor</h2>
-            <button className="close-button" onClick={closeEditModal}><X size={20} /></button>
-          </div>
-          <div className="edit-modal-body">
-            {editError && <div className="error-message">{editError}</div>}
-            <div className="form-group">
-              <label htmlFor="name">Nome:</label>
-              <input type="text" id="name" name="name" value={editingSeller.name} onChange={handleEditInputChange} maxLength={50} />
+      {isEditModalOpen && editingSeller && (
+        <div className="edit-modal-overlay">
+          <div className="edit-modal">
+            <div className="edit-modal-header">
+              <h2>Editar Vendedor</h2>
+              <button className="close-button" onClick={closeEditModal}><X size={20} /></button>
             </div>
-            <div className="form-group">
-              <label htmlFor="lastName">Sobrenome:</label>
-              <input type="text" id="lastName" name="lastName" value={editingSeller.lastName} onChange={handleEditInputChange} maxLength={50} />
-            </div>
-            <div className="form-group">
-              <label htmlFor="email">Email:</label>
-              <input type="email" id="email" name="email" value={editingSeller.email} onChange={handleEditInputChange} maxLength={100} />
-            </div>
-            <div className="form-group">
-              <label htmlFor="cpf">CPF:</label>
-              <input type="text" id="cpf" name="cpf" value={formatInput(editingSeller.cpf, '999.999.999-99')} onChange={handleEditInputChange} maxLength={14} />
-            </div>
-            <div className="form-group">
-              <label htmlFor="phone">Telefone:</label>
-              <input type="text" id="phone" name="phone" value={formatInput(editingSeller.phone, '(99) 99999-9999')} onChange={handleEditInputChange} maxLength={16} />
-            </div>
-            <div className="form-group">
-              <label htmlFor="birthDate">Data de Nascimento:</label>
-              <input type="date" id="birthDate" name="birthDate" value={editingSeller.birthDate ? editingSeller.birthDate.split('T')[0] : ''} onChange={handleEditInputChange} />
-            </div>
-            <div className="form-group address-group">
-              <label>Endereço:</label>
-              <div className="address-inputs">
+            <div className="edit-modal-body">
+              {editError && <div className="error-message">{editError}</div>}
+              <div className="form-group">
+                <label htmlFor="name">Nome:</label>
+                <input type="text" id="name" name="name" value={editingSeller.name} onChange={handleEditInputChange} maxLength={50} />
+              </div>
+              <div className="form-group">
+                <label htmlFor="lastName">Sobrenome:</label>
+                <input type="text" id="lastName" name="lastName" value={editingSeller.lastName} onChange={handleEditInputChange} maxLength={50} />
+              </div>
+              <div className="form-group">
+                <label htmlFor="email">Email:</label>
+                <input type="email" id="email" name="email" value={editingSeller.email} onChange={handleEditInputChange} maxLength={100} />
+              </div>
+              <div className="form-group">
+                <label htmlFor="cpf">CPF:</label>
+                <input type="text" id="cpf" name="cpf" value={formatInput(editingSeller.cpf, '999.999.999-99')} onChange={handleEditInputChange} maxLength={14} />
+              </div>
+              <div className="form-group">
+                <label htmlFor="phone">Telefone:</label>
+                <input type="text" id="phone" name="phone" value={formatInput(editingSeller.phone, '(99) 99999-9999')} onChange={handleEditInputChange} maxLength={16} />
+              </div>
+              <div className="form-group">
+                <label htmlFor="birthDate">Data de Nascimento:</label>
+                <input type="date" id="birthDate" name="birthDate" value={editingSeller.birthDate ? editingSeller.birthDate.split('T')[0] : ''} onChange={handleEditInputChange} />
+              </div>
+              <div className="form-group address-group">
+                <label>Endereço:</label>
                 <input
                   type="text"
                   name="address.zipCode"
@@ -347,14 +360,30 @@ function ReadSellersPage() {
                 />
               </div>
             </div>
-          </div>
-          <div className="edit-modal-footer">
-            <button className="cancel-button" onClick={closeEditModal}>Cancelar</button>
-            <button className="save-button" onClick={handleSaveEdit}>Salvar</button>
+            <div className="edit-modal-footer">
+              <button className="cancel-button" onClick={closeEditModal}>Cancelar</button>
+              <button className="save-button" onClick={handleSaveEdit}>Salvar</button>
+            </div>
           </div>
         </div>
-      </div>
-    )}
+      )}
+
+      {isDeleteConfirmationOpen && sellerToDelete && (
+        <div className="delete-confirmation-overlay">
+          <div className="delete-confirmation-modal">
+            <h2>Você realmente deseja excluir este vendedor?</h2>
+            <p><strong>Nome:</strong> {sellerToDelete.name} {sellerToDelete.lastName}</p>
+            <p><strong>Status:</strong> N/A</p>
+            <p><strong>CPF:</strong> {sellerToDelete.cpf}</p>
+            <p><strong>Email:</strong> {sellerToDelete.email}</p>
+            <p><strong>Telefone:</strong> {sellerToDelete.phone}</p>
+            <div className="delete-confirmation-buttons">
+              <button className="cancel-button" onClick={closeDeleteConfirmation}>Cancelar</button>
+              <button className="delete-button" onClick={handleDeleteSeller}>Excluir</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="pagination">
         <button onClick={() => setPage(1)} disabled={page === 1}>«</button>
