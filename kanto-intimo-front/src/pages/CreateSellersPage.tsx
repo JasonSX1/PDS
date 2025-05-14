@@ -5,22 +5,23 @@ import Navbar from "../components/ui/navbar";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Calendar } from "lucide-react";
+import api from "../lib/axiosConfig";
 
 // Lista de estados brasileiros
 const estadosBrasileiros = [
-  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", 
-  "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", 
+  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO",
+  "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI",
   "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"
 ];
 
 // Função auxiliar para formatar inputs com máscara
 const formatInput = (value: string, pattern: string) => {
   if (!value) return '';
-  
+
   const numbers = value.replace(/\D/g, '');
   let formatted = '';
   let numberIndex = 0;
-  
+
   for (let i = 0; i < pattern.length && numberIndex < numbers.length; i++) {
     if (pattern[i] === '9') {
       formatted += numbers[numberIndex++];
@@ -28,7 +29,7 @@ const formatInput = (value: string, pattern: string) => {
       formatted += pattern[i];
     }
   }
-  
+
   return formatted;
 };
 
@@ -50,7 +51,7 @@ export default function CreateSellersPage() {
     },
   });
 
-    // Efeito para sincronizar dateInput com birthDate
+  // Efeito para sincronizar dateInput com birthDate
   useEffect(() => {
     if (formData.birthDate) {
       const day = String(formData.birthDate.getDate()).padStart(2, '0');
@@ -64,21 +65,21 @@ export default function CreateSellersPage() {
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, '');
-    
+
     // Aplica máscara de data (dd/mm/yyyy)
     if (value.length > 2 && value.length <= 4) {
       value = value.replace(/^(\d{2})(\d{0,2})/, '$1/$2');
     } else if (value.length > 4) {
       value = value.replace(/^(\d{2})(\d{2})(\d{0,4})/, '$1/$2/$3');
     }
-    
+
     setDateInput(value);
-    
+
     // Converte para Date quando tiver data completa
     if (value.length === 10) {
       const [day, month, year] = value.split('/').map(Number);
       const date = new Date(year, month - 1, day);
-      
+
       // Valida se a data é válida
       if (
         date.getDate() === day &&
@@ -101,7 +102,7 @@ export default function CreateSellersPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
+
     let formattedValue = value;
     if (name === 'cpf') {
       formattedValue = formatInput(value, '999.999.999-99');
@@ -112,13 +113,13 @@ export default function CreateSellersPage() {
     } else if (name === 'state') {
       formattedValue = value.toUpperCase();
       // Filtra sugestões
-      const filtered = estadosBrasileiros.filter(estado => 
+      const filtered = estadosBrasileiros.filter(estado =>
         estado.startsWith(formattedValue)
       );
       setSuggestions(filtered);
       setShowSuggestions(true);
     }
-    
+
     if (name in formData.address || name === 'zipCode' || name === 'state') {
       setFormData(prev => ({
         ...prev,
@@ -183,15 +184,10 @@ export default function CreateSellersPage() {
         }
       };
 
-      const response = await fetch("http://localhost:3000/seller", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await api.post("/seller", payload);
 
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.message || "Erro ao cadastrar");
+      if (response.status !== 201) {
+        throw new Error(response.data.message || "Erro ao cadastrar");
       }
 
       alert("Vendedor cadastrado com sucesso!");
@@ -211,9 +207,9 @@ export default function CreateSellersPage() {
           state: ""
         },
       });
-    } catch (err) {
-      console.error("Erro:", err);
-      setError(err instanceof Error ? err.message : "Erro desconhecido");
+    } catch (error: any) {
+      console.error("Erro:", error);
+      setError(error.message || "Erro desconhecido");
     }
   };
 
@@ -225,37 +221,37 @@ export default function CreateSellersPage() {
       <div className="sellers-header">
         <h2 style={{ fontWeight: 700 }}>Cadastrar Vendedor</h2>
         <h3>
-          <a href="/sellers">Visualizar Vendedor</a>
+          <a href="/sellers" style={{ color: 'black', textDecoration: 'none' }}>Visualizar Vendedor</a>
         </h3>
       </div>
 
       <form className="seller-form" onSubmit={handleSubmit}>
         <div className="input-group">
-          <input 
-            name="name" 
-            placeholder="Nome" 
-            value={formData.name} 
-            onChange={handleChange} 
-            required 
+          <input
+            name="name"
+            placeholder="Nome"
+            value={formData.name}
+            onChange={handleChange}
+            required
             maxLength={50}
           />
-          <input 
-            name="lastName" 
-            placeholder="Sobrenome" 
-            value={formData.lastName} 
-            onChange={handleChange} 
-            required 
+          <input
+            name="lastName"
+            placeholder="Sobrenome"
+            value={formData.lastName}
+            onChange={handleChange}
+            required
             maxLength={50}
           />
         </div>
-        
-        <input 
-          type="email" 
-          name="email" 
-          placeholder="E-mail" 
-          value={formData.email} 
-          onChange={handleChange} 
-          required 
+
+        <input
+          type="email"
+          name="email"
+          placeholder="E-mail"
+          value={formData.email}
+          onChange={handleChange}
+          required
           maxLength={100}
         />
 
@@ -297,10 +293,10 @@ export default function CreateSellersPage() {
             showYearDropdown
             dropdownMode="select"
             maxDate={new Date()}
-            customInput={<button type="button" style={{ 
-              background: 'none', 
-              border: 'none', 
-              cursor: 'pointer' 
+            customInput={<button type="button" style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer'
             }}>
               <Calendar size={20} />
             </button>}
@@ -316,31 +312,31 @@ export default function CreateSellersPage() {
           maxLength={9}
           required
         />
-        <input 
-          name="street" 
-          placeholder="Rua" 
-          value={formData.address.street} 
-          onChange={handleChange} 
-          required 
+        <input
+          name="street"
+          placeholder="Rua"
+          value={formData.address.street}
+          onChange={handleChange}
+          required
           maxLength={100}
         />
-        <input 
-          name="number" 
-          placeholder="Número" 
-          value={formData.address.number} 
-          onChange={handleChange} 
-          required 
+        <input
+          name="number"
+          placeholder="Número"
+          value={formData.address.number}
+          onChange={handleChange}
+          required
           maxLength={10}
         />
-        <input 
-          name="city" 
-          placeholder="Cidade" 
-          value={formData.address.city} 
-          onChange={handleChange} 
-          required 
+        <input
+          name="city"
+          placeholder="Cidade"
+          value={formData.address.city}
+          onChange={handleChange}
+          required
           maxLength={50}
         />
-        
+
         <div style={{ position: 'relative' }}>
           <input
             name="state"
@@ -366,7 +362,7 @@ export default function CreateSellersPage() {
               overflowY: 'auto'
             }}>
               {suggestions.map((estado, index) => (
-                <li 
+                <li
                   key={index}
                   style={{ padding: '8px', cursor: 'pointer', borderBottom: '1px solid #eee' }}
                   onMouseDown={() => handleSuggestionClick(estado)}
