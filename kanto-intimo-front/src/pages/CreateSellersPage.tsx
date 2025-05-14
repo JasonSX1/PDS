@@ -5,7 +5,7 @@ import Navbar from "../components/ui/navbar";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Calendar } from "lucide-react";
-import api from "../lib/axiosConfig"; // Assumindo que você tem o axiosConfig configurado
+import api from "../lib/axiosConfig";
 
 // Lista de estados brasileiros
 const estadosBrasileiros = [
@@ -51,7 +51,6 @@ export default function CreateSellersPage() {
     },
   });
 
-  // Efeito para sincronizar dateInput com birthDate
   useEffect(() => {
     if (formData.birthDate) {
       const day = String(formData.birthDate.getDate()).padStart(2, '0');
@@ -65,31 +64,17 @@ export default function CreateSellersPage() {
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, '');
-
-    // Aplica máscara de data (dd/mm/yyyy)
     if (value.length > 2 && value.length <= 4) {
       value = value.replace(/^(\d{2})(\d{0,2})/, '$1/$2');
     } else if (value.length > 4) {
       value = value.replace(/^(\d{2})(\d{2})(\d{0,4})/, '$1/$2/$3');
     }
-
     setDateInput(value);
-
-    // Converte para Date quando tiver data completa
     if (value.length === 10) {
       const [day, month, year] = value.split('/').map(Number);
       const date = new Date(year, month - 1, day);
-
-      // Valida se a data é válida
-      if (
-        date.getDate() === day &&
-        date.getMonth() === month - 1 &&
-        date.getFullYear() === year &&
-        date <= new Date()
-      ) {
+      if (date.getDate() === day && date.getMonth() === month - 1 && date.getFullYear() === year && date <= new Date()) {
         setFormData(prev => ({ ...prev, birthDate: date }));
-      } else {
-        // Data inválida, mantém o input mas não atualiza o formData
       }
     } else {
       setFormData(prev => ({ ...prev, birthDate: null }));
@@ -100,7 +85,6 @@ export default function CreateSellersPage() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [error, setError] = useState("");
 
-  // Função para buscar endereço pelo CEP
   const fetchAddressByZipCode = useCallback(async (zipCode: string) => {
     const cleanZipCode = zipCode.replace(/\D/g, "");
     if (cleanZipCode.length === 8) {
@@ -135,88 +119,47 @@ export default function CreateSellersPage() {
         setError("Erro ao buscar CEP. Tente novamente.");
       }
     }
-  }, []); // useCallback para evitar recriação desnecessária da função
+  }, []);
 
-const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-
     let formattedValue = value;
 
     if (name === 'name' || name === 'lastName' || name === 'city') {
-      // Permite apenas letras, espaços e alguns caracteres especiais comuns em nomes/cidades
-      if (!/^[a-zA-Z\s\u00C0-\u00FF]*$/.test(value)) {
-        return; // Não atualiza o estado se houver números ou caracteres inválidos
-      }
+      if (!/^[a-zA-Z\s\u00C0-\u00FF]*$/.test(value)) return;
       formattedValue = value;
     } else if (name === 'cpf') {
-      // Permite apenas números
-      if (/\D/.test(value.replace(/\D/g, ''))) {
-        return;
-      }
+      if (/\D/.test(value.replace(/\D/g, ''))) return;
       formattedValue = formatInput(value, '999.999.999-99');
     } else if (name === 'phone') {
-      // Permite apenas números
-      if (/\D/.test(value.replace(/\D/g, ''))) {
-        return;
-      }
+      if (/\D/.test(value.replace(/\D/g, ''))) return;
       formattedValue = formatInput(value, '(99) 99999-9999');
     } else if (name === 'zipCode') {
-      // Permite apenas números
-      if (/\D/.test(value.replace(/\D/g, ''))) {
-        return;
-      }
+      if (/\D/.test(value.replace(/\D/g, ''))) return;
       formattedValue = formatInput(value, '99999-999');
-      // Dispara a busca do CEP ao completar 9 caracteres (máscara completa)
-      if (formattedValue.length === 9) {
-        fetchAddressByZipCode(formattedValue);
-      }
+      if (formattedValue.length === 9) fetchAddressByZipCode(formattedValue);
     } else if (name === 'state') {
-      // Impede a inserção de números no campo de estado
-      if (/\d/.test(value)) {
-        return; // Não atualiza o estado se houver números
-      }
+      if (/\d/.test(value)) return;
       formattedValue = value.toUpperCase();
-      // Filtra sugestões
-      const filtered = estadosBrasileiros.filter(estado =>
-        estado.startsWith(formattedValue)
-      );
+      const filtered = estadosBrasileiros.filter(estado => estado.startsWith(formattedValue));
       setSuggestions(filtered);
       setShowSuggestions(true);
     } else if (name === 'number') {
-      // Permite apenas números no campo de número do endereço
-      if (/\D/.test(value)) {
-        return;
-      }
+      if (/\D/.test(value)) return;
       formattedValue = value;
     } else if (name === 'street') {
-      // Remove a restrição, permitindo qualquer caractere
       formattedValue = value;
     }
 
     if (name in formData.address || name === 'zipCode' || name === 'state' || name === 'street' || name === 'number' || name === 'city') {
-      setFormData(prev => ({
-        ...prev,
-        address: {
-          ...prev.address,
-          [name]: formattedValue,
-        },
-      }));
+      setFormData(prev => ({ ...prev, address: { ...prev.address, [name]: formattedValue } }));
     } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: formattedValue,
-      }));
+      setFormData(prev => ({ ...prev, [name]: formattedValue }));
     }
   };
 
   const handleSuggestionClick = (estado: string) => {
-    setFormData(prev => ({
-      ...prev,
-      address: {
-        ...prev.address,
-        state: estado
-      }
-    }));
+    setFormData(prev => ({ ...prev, address: { ...prev.address, state: estado } }));
     setShowSuggestions(false);
   };
 
@@ -224,7 +167,6 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     setError("");
 
-    // Validações
     if (!estadosBrasileiros.includes(formData.address.state)) {
       setError("Por favor, selecione um estado válido (sigla de 2 letras)");
       return;
@@ -241,7 +183,6 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     }
 
     try {
-      // Formata os dados para o padrão do backend
       const payload = {
         name: `${formData.name} ${formData.lastName}`.trim(),
         email: formData.email,
@@ -264,7 +205,6 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       }
 
       alert("Vendedor cadastrado com sucesso!");
-      // Reset form
       setFormData({
         name: "",
         lastName: "",
@@ -280,7 +220,7 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           state: ""
         },
       });
-      setDateInput(""); // Limpar o input de data também
+      setDateInput("");
     } catch (error: any) {
       console.error("Erro:", error);
       setError(error.message || "Erro desconhecido");
@@ -347,7 +287,7 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           required
         />
 
-        <label style={{ marginTop: 12 }}>Data de nascimento</label>
+        <label style={{ marginTop: 12, textAlign: 'center', display: 'block' }}>Data de nascimento</label>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <input
             type="text"
@@ -367,25 +307,48 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             showYearDropdown
             dropdownMode="select"
             maxDate={new Date()}
-            customInput={<button type="button" style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer'
-            }}>
+            customInput={<button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
               <Calendar size={20} />
             </button>}
           />
         </div>
 
-        <label style={{ marginTop: 16 }}>Endereço</label>
-        <input
-          name="zipCode"
-          placeholder="CEP (99999-999)"
-          value={formData.address.zipCode}
-          onChange={handleChange}
-          maxLength={9}
-          required
-        />
+        <label style={{ marginTop: 16, textAlign: 'center', display: 'block' }}>Endereço</label>
+        <div className="address-group">
+          <input
+            name="zipCode"
+            placeholder="CEP (99999-999)"
+            value={formData.address.zipCode}
+            onChange={handleChange}
+            maxLength={9}
+            required
+          />
+          <div style={{ position: 'relative', flex: 1 }}>
+            <input
+              name="state"
+              placeholder="Estado (sigla)"
+              value={formData.address.state}
+              onChange={handleChange}
+              maxLength={2}
+              required
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+            />
+            {showSuggestions && suggestions.length > 0 && (
+              <ul style={{ position: 'absolute', zIndex: 1000, listStyle: 'none', padding: 0, margin: 0, backgroundColor: 'white', border: '1px solid #ddd', width: '100%', maxHeight: '200px', overflowY: 'auto' }}>
+                {suggestions.map((estado, index) => (
+                  <li
+                    key={index}
+                    style={{ padding: '8px', cursor: 'pointer', borderBottom: '1px solid #eee' }}
+                    onMouseDown={() => handleSuggestionClick(estado)}
+                  >
+                    {estado}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
         <input
           name="street"
           placeholder="Rua"
@@ -410,43 +373,6 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           required
           maxLength={50}
         />
-
-        <div style={{ position: 'relative' }}>
-          <input
-            name="state"
-            placeholder="Estado (sigla)"
-            value={formData.address.state}
-            onChange={handleChange}
-            maxLength={2}
-            required
-            onFocus={() => setShowSuggestions(true)}
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-          />
-          {showSuggestions && suggestions.length > 0 && (
-            <ul style={{
-              position: 'absolute',
-              zIndex: 1000,
-              listStyle: 'none',
-              padding: 0,
-              margin: 0,
-              backgroundColor: 'white',
-              border: '1px solid #ddd',
-              width: '100%',
-              maxHeight: '200px',
-              overflowY: 'auto'
-            }}>
-              {suggestions.map((estado, index) => (
-                <li
-                  key={index}
-                  style={{ padding: '8px', cursor: 'pointer', borderBottom: '1px solid #eee' }}
-                  onMouseDown={() => handleSuggestionClick(estado)}
-                >
-                  {estado}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
 
         {error && <div style={{ color: "red", marginTop: 12 }}>{error}</div>}
 
