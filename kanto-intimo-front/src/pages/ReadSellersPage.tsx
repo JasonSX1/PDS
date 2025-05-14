@@ -65,6 +65,7 @@ function ReadSellersPage() {
   const [editingSeller, setEditingSeller] = useState<Seller | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const [editError, setEditError] = useState<string>('');
+  const [deleteSuccessMessage, setDeleteSuccessMessage] = useState<string>('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -127,6 +128,8 @@ function ReadSellersPage() {
     } else if (name === 'address.number') {
       if (/\D/.test(value)) return;
       formattedValue = value;
+    } else if (name === 'birthDate') {
+      formattedValue = value; // Mantém o formato de data
     }
 
     setEditingSeller(prev => {
@@ -175,12 +178,16 @@ function ReadSellersPage() {
           }
         };
 
-        // Use PATCH para atualizar o vendedor
         const response = await api.patch(`/seller/${editingSeller.id}`, payload);
 
         if (response.status === 200) {
+          const [updatedName, ...updatedLastNameParts] = payload.name.split(' ');
+          const updatedLastName = updatedLastNameParts.join(' ');
+
           const updatedSellers = sellers.map(seller =>
-            seller.id === editingSeller.id ? { ...seller, name: payload.name, lastName: editingSeller.lastName } : seller
+            seller.id === editingSeller.id
+              ? { ...seller, name: updatedName, lastName: updatedLastName }
+              : seller
           );
           setSellers(updatedSellers);
           closeEditModal();
@@ -201,10 +208,11 @@ function ReadSellersPage() {
       try {
         const response = await api.delete(`/seller/${id}`);
 
-        if (response.status === 204) {
+        if (response.status === 204 || response.status === 200) { // Considera 200 como sucesso também
           const updatedSellers = sellers.filter(seller => seller.id !== id);
           setSellers(updatedSellers);
-          alert('Vendedor excluído com sucesso!');
+          setDeleteSuccessMessage('Vendedor excluído com sucesso!');
+          setTimeout(() => setDeleteSuccessMessage(''), 3000); // Limpa a mensagem após 3 segundos
         } else {
           console.error('Erro ao excluir vendedor:', response.data);
           alert('Erro ao excluir vendedor.');
@@ -225,6 +233,8 @@ function ReadSellersPage() {
         <Link to="/sellers/create" className="sellers-tab">Cadastrar Vendedor</Link>
         <Link to="/sellers" className="sellers-tab active">Visualizar Vendedor</Link>
       </div>
+
+      {deleteSuccessMessage && <div className="success-message">{deleteSuccessMessage}</div>}
 
       <div className="sellers-list-container">
         <div className="sellers-list-header">
@@ -259,46 +269,47 @@ function ReadSellersPage() {
         )}
       </div>
 
-      {isEditModalOpen && editingSeller && (
-        <div className="edit-modal-overlay">
-          <div className="edit-modal">
-            <div className="edit-modal-header">
-              <h2>Editar Vendedor</h2>
-              <button className="close-button" onClick={closeEditModal}><X size={20} /></button>
+    {isEditModalOpen && editingSeller && (
+      <div className="edit-modal-overlay">
+        <div className="edit-modal">
+          <div className="edit-modal-header">
+            <h2>Editar Vendedor</h2>
+            <button className="close-button" onClick={closeEditModal}><X size={20} /></button>
+          </div>
+          <div className="edit-modal-body">
+            {editError && <div className="error-message">{editError}</div>}
+            <div className="form-group">
+              <label htmlFor="name">Nome:</label>
+              <input type="text" id="name" name="name" value={editingSeller.name} onChange={handleEditInputChange} maxLength={50} />
             </div>
-            <div className="edit-modal-body">
-              {editError && <div style={{ color: 'red', marginBottom: '10px' }}>{editError}</div>}
-              <div className="form-group">
-                <label htmlFor="name">Nome:</label>
-                <input type="text" id="name" name="name" value={editingSeller.name} onChange={handleEditInputChange} maxLength={50} />
-              </div>
-              <div className="form-group">
-                <label htmlFor="lastName">Sobrenome:</label>
-                <input type="text" id="lastName" name="lastName" value={editingSeller.lastName} onChange={handleEditInputChange} maxLength={50} />
-              </div>
-              <div className="form-group">
-                <label htmlFor="email">Email:</label>
-                <input type="email" id="email" name="email" value={editingSeller.email} onChange={handleEditInputChange} maxLength={100} />
-              </div>
-              <div className="form-group">
-                <label htmlFor="cpf">CPF:</label>
-                <input type="text" id="cpf" name="cpf" value={editingSeller.cpf} onChange={handleEditInputChange} maxLength={14} />
-              </div>
-              <div className="form-group">
-                <label htmlFor="phone">Telefone:</label>
-                <input type="text" id="phone" name="phone" value={editingSeller.phone} onChange={handleEditInputChange} maxLength={16} />
-              </div>
-              <div className="form-group">
-                <label htmlFor="birthDate">Data de Nascimento:</label>
-                <input type="date" id="birthDate" name="birthDate" value={editingSeller.birthDate ? editingSeller.birthDate.split('T')[0] : ''} onChange={handleEditInputChange} />
-              </div>
-              <div className="form-group">
-                <label>Endereço:</label>
+            <div className="form-group">
+              <label htmlFor="lastName">Sobrenome:</label>
+              <input type="text" id="lastName" name="lastName" value={editingSeller.lastName} onChange={handleEditInputChange} maxLength={50} />
+            </div>
+            <div className="form-group">
+              <label htmlFor="email">Email:</label>
+              <input type="email" id="email" name="email" value={editingSeller.email} onChange={handleEditInputChange} maxLength={100} />
+            </div>
+            <div className="form-group">
+              <label htmlFor="cpf">CPF:</label>
+              <input type="text" id="cpf" name="cpf" value={formatInput(editingSeller.cpf, '999.999.999-99')} onChange={handleEditInputChange} maxLength={14} />
+            </div>
+            <div className="form-group">
+              <label htmlFor="phone">Telefone:</label>
+              <input type="text" id="phone" name="phone" value={formatInput(editingSeller.phone, '(99) 99999-9999')} onChange={handleEditInputChange} maxLength={16} />
+            </div>
+            <div className="form-group">
+              <label htmlFor="birthDate">Data de Nascimento:</label>
+              <input type="date" id="birthDate" name="birthDate" value={editingSeller.birthDate ? editingSeller.birthDate.split('T')[0] : ''} onChange={handleEditInputChange} />
+            </div>
+            <div className="form-group address-group">
+              <label>Endereço:</label>
+              <div className="address-inputs">
                 <input
                   type="text"
                   name="address.zipCode"
                   placeholder="CEP (99999-999)"
-                  value={editingSeller.address.zipCode}
+                  value={formatInput(editingSeller.address.zipCode, '99999-999')}
                   onChange={handleEditInputChange}
                   maxLength={9}
                 />
@@ -336,17 +347,24 @@ function ReadSellersPage() {
                 />
               </div>
             </div>
-            <div className="edit-modal-footer">
-              <button className="cancel-button" onClick={closeEditModal}>Cancelar</button>
-              <button className="save-button" onClick={handleSaveEdit}>Salvar</button>
-            </div>
+          </div>
+          <div className="edit-modal-footer">
+            <button className="cancel-button" onClick={closeEditModal}>Cancelar</button>
+            <button className="save-button" onClick={handleSaveEdit}>Salvar</button>
           </div>
         </div>
-      )}
+      </div>
+    )}
 
       <div className="pagination">
-        {/* ... botões de paginação ... */}
-        <button className="update-button">Atualizar</button>
+        <button onClick={() => setPage(1)} disabled={page === 1}>«</button>
+        <button onClick={() => setPage(p => Math.max(p - 1, 1))} disabled={page === 1}>‹</button>
+        <span>
+          Página <strong>{page}</strong> de {totalPages}
+        </span>
+        <button onClick={() => setPage(p => Math.min(p + 1, totalPages))} disabled={page === totalPages}>›</button>
+        <button onClick={() => setPage(totalPages)} disabled={page === totalPages}>»</button>
+        <button className="update-button" onClick={() => setPage(page)}>Atualizar</button>
       </div>
     </div>
   );
