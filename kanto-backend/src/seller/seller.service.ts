@@ -1,7 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { SellerRepository } from './repository/seller.repository';
 import { CreateSellerDto } from './dto/create-seller.dto';
 import { UpdateSellerDto } from './dto/update-seller.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class SellerService {
@@ -43,7 +48,29 @@ export class SellerService {
   }
 
   async create(dto: CreateSellerDto) {
-    return await this.repository.create(dto);
+    try {
+      return await this.repository.create(dto);
+    } catch (error) {
+      console.error('Erro ao criar vendedor:', error);
+
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002' &&
+        Array.isArray((error.meta as any)?.target)
+      ) {
+        const targetFields = (error.meta as any).target as string[];
+
+        if (targetFields.includes('email')) {
+          throw new BadRequestException('Já existe um vendedor com este e-mail.');
+        }
+
+        if (targetFields.includes('cpf')) {
+          throw new BadRequestException('Já existe um vendedor com este CPF.');
+        }
+      }
+
+      throw new InternalServerErrorException('Erro ao criar o vendedor.');
+    }
   }
 
   async update(id: number, dto: UpdateSellerDto) {
