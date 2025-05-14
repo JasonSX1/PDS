@@ -30,10 +30,10 @@ function SellersPage() {
       <Header />
       <Navbar />
 
-      <div className="sellers-header">
-        <h2>Cadastrar Vendedor</h2>
-        <h3>Visualizar Vendedor</h3>
-      </div>
+    <div className="sellers-header">
+      <Link to="/sellers/create" className="sellers-tab">Cadastrar Vendedor</Link>
+      <Link to="/sellers" className="sellers-tab active">Visualizar Vendedor</Link>
+    </div>
 
       <table className="sellers-table">
         <thead>
