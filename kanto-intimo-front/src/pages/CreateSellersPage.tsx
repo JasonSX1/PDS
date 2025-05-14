@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/SellersPage.css";
 import Header from "../components/ui/header";
 import Navbar from "../components/ui/navbar";
@@ -33,6 +33,7 @@ const formatInput = (value: string, pattern: string) => {
 };
 
 export default function CreateSellersPage() {
+  const [dateInput, setDateInput] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     lastName: "",
@@ -48,6 +49,51 @@ export default function CreateSellersPage() {
       state: ""
     },
   });
+
+    // Efeito para sincronizar dateInput com birthDate
+  useEffect(() => {
+    if (formData.birthDate) {
+      const day = String(formData.birthDate.getDate()).padStart(2, '0');
+      const month = String(formData.birthDate.getMonth() + 1).padStart(2, '0');
+      const year = formData.birthDate.getFullYear();
+      setDateInput(`${day}/${month}/${year}`);
+    } else {
+      setDateInput("");
+    }
+  }, [formData.birthDate]);
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, '');
+    
+    // Aplica máscara de data (dd/mm/yyyy)
+    if (value.length > 2 && value.length <= 4) {
+      value = value.replace(/^(\d{2})(\d{0,2})/, '$1/$2');
+    } else if (value.length > 4) {
+      value = value.replace(/^(\d{2})(\d{2})(\d{0,4})/, '$1/$2/$3');
+    }
+    
+    setDateInput(value);
+    
+    // Converte para Date quando tiver data completa
+    if (value.length === 10) {
+      const [day, month, year] = value.split('/').map(Number);
+      const date = new Date(year, month - 1, day);
+      
+      // Valida se a data é válida
+      if (
+        date.getDate() === day &&
+        date.getMonth() === month - 1 &&
+        date.getFullYear() === year &&
+        date <= new Date()
+      ) {
+        setFormData(prev => ({ ...prev, birthDate: date }));
+      } else {
+        // Data inválida, mantém o input mas não atualiza o formData
+      }
+    } else {
+      setFormData(prev => ({ ...prev, birthDate: null }));
+    }
+  };
 
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -233,18 +279,32 @@ export default function CreateSellersPage() {
 
         <label style={{ marginTop: 12 }}>Data de nascimento</label>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <input
+            type="text"
+            placeholder="dd/mm/aaaa"
+            value={dateInput}
+            onChange={handleDateChange}
+            maxLength={10}
+            style={{ padding: '8px', width: '100%' }}
+          />
           <DatePicker
             selected={formData.birthDate}
             onChange={(date) => setFormData(prev => ({ ...prev, birthDate: date }))}
             dateFormat="dd/MM/yyyy"
-            placeholderText="Selecione a data"
+            placeholderText="Ou selecione"
             className="datepicker-input"
             showMonthDropdown
             showYearDropdown
             dropdownMode="select"
             maxDate={new Date()}
+            customInput={<button type="button" style={{ 
+              background: 'none', 
+              border: 'none', 
+              cursor: 'pointer' 
+            }}>
+              <Calendar size={20} />
+            </button>}
           />
-          <Calendar size={20} />
         </div>
 
         <label style={{ marginTop: 16 }}>Endereço</label>
