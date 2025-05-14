@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import "../styles/SellersPage.css";
 import Header from "../components/ui/header";
 import Navbar from "../components/ui/navbar";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Calendar } from "lucide-react";
-import api from "../lib/axiosConfig";
+import api from "../lib/axiosConfig"; // Assumindo que você tem o axiosConfig configurado
 
 // Lista de estados brasileiros
 const estadosBrasileiros = [
@@ -100,17 +100,81 @@ export default function CreateSellersPage() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [error, setError] = useState("");
 
+  // Função para buscar endereço pelo CEP
+  const fetchAddressByZipCode = useCallback(async (zipCode: string) => {
+    const cleanZipCode = zipCode.replace(/\D/g, "");
+    if (cleanZipCode.length === 8) {
+      try {
+        const response = await api.get(`https://viacep.com.br/ws/${cleanZipCode}/json/`);
+        const data = response.data;
+
+        if (data && !data.erro) {
+          setFormData(prev => ({
+            ...prev,
+            address: {
+              ...prev.address,
+              street: data.logradouro || '',
+              city: data.localidade || '',
+              state: data.uf || ''
+            }
+          }));
+        } else {
+          setError("CEP não encontrado ou inválido.");
+          setFormData(prev => ({
+            ...prev,
+            address: {
+              ...prev.address,
+              street: '',
+              city: '',
+              state: ''
+            }
+          }));
+        }
+      } catch (err) {
+        console.error("Erro ao buscar CEP:", err);
+        setError("Erro ao buscar CEP. Tente novamente.");
+      }
+    }
+  }, []); // useCallback para evitar recriação desnecessária da função
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
     let formattedValue = value;
-    if (name === 'cpf') {
+
+    if (name === 'name' || name === 'lastName' || name === 'city' || name === 'street') {
+      // Permite apenas letras, espaços e alguns caracteres especiais comuns em nomes/endereços
+      if (!/^[a-zA-Z\s\u00C0-\u00FF]*$/.test(value)) { // Adicionado \u00C0-\u00FF para caracteres acentuados
+        return; // Não atualiza o estado se houver números ou caracteres inválidos
+      }
+      formattedValue = value;
+    } else if (name === 'cpf') {
+      // Permite apenas números
+      if (/\D/.test(value.replace(/\D/g, ''))) { // Verifica se há não-dígitos após a remoção da máscara
+        return;
+      }
       formattedValue = formatInput(value, '999.999.999-99');
     } else if (name === 'phone') {
+      // Permite apenas números
+      if (/\D/.test(value.replace(/\D/g, ''))) { // Verifica se há não-dígitos após a remoção da máscara
+        return;
+      }
       formattedValue = formatInput(value, '(99) 99999-9999');
     } else if (name === 'zipCode') {
+      // Permite apenas números
+      if (/\D/.test(value.replace(/\D/g, ''))) { // Verifica se há não-dígitos após a remoção da máscara
+        return;
+      }
       formattedValue = formatInput(value, '99999-999');
+      // Dispara a busca do CEP ao completar 9 caracteres (máscara completa)
+      if (formattedValue.length === 9) {
+        fetchAddressByZipCode(formattedValue);
+      }
     } else if (name === 'state') {
+      // Impede a inserção de números no campo de estado
+      if (/\d/.test(value)) {
+        return; // Não atualiza o estado se houver números
+      }
       formattedValue = value.toUpperCase();
       // Filtra sugestões
       const filtered = estadosBrasileiros.filter(estado =>
@@ -118,9 +182,15 @@ export default function CreateSellersPage() {
       );
       setSuggestions(filtered);
       setShowSuggestions(true);
+    } else if (name === 'number') {
+      // Permite apenas números no campo de número do endereço
+      if (/\D/.test(value)) {
+        return;
+      }
+      formattedValue = value;
     }
 
-    if (name in formData.address || name === 'zipCode' || name === 'state') {
+    if (name in formData.address || name === 'zipCode' || name === 'state' || name === 'street' || name === 'number' || name === 'city') {
       setFormData(prev => ({
         ...prev,
         address: {
@@ -207,6 +277,7 @@ export default function CreateSellersPage() {
           state: ""
         },
       });
+      setDateInput(""); // Limpar o input de data também
     } catch (error: any) {
       console.error("Erro:", error);
       setError(error.message || "Erro desconhecido");
