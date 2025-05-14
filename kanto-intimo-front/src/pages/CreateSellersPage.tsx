@@ -137,32 +137,32 @@ export default function CreateSellersPage() {
     }
   }, []); // useCallback para evitar recriação desnecessária da função
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
     let formattedValue = value;
 
-    if (name === 'name' || name === 'lastName' || name === 'city' || name === 'street') {
-      // Permite apenas letras, espaços e alguns caracteres especiais comuns em nomes/endereços
-      if (!/^[a-zA-Z\s\u00C0-\u00FF]*$/.test(value)) { // Adicionado \u00C0-\u00FF para caracteres acentuados
+    if (name === 'name' || name === 'lastName' || name === 'city') {
+      // Permite apenas letras, espaços e alguns caracteres especiais comuns em nomes/cidades
+      if (!/^[a-zA-Z\s\u00C0-\u00FF]*$/.test(value)) {
         return; // Não atualiza o estado se houver números ou caracteres inválidos
       }
       formattedValue = value;
     } else if (name === 'cpf') {
       // Permite apenas números
-      if (/\D/.test(value.replace(/\D/g, ''))) { // Verifica se há não-dígitos após a remoção da máscara
+      if (/\D/.test(value.replace(/\D/g, ''))) {
         return;
       }
       formattedValue = formatInput(value, '999.999.999-99');
     } else if (name === 'phone') {
       // Permite apenas números
-      if (/\D/.test(value.replace(/\D/g, ''))) { // Verifica se há não-dígitos após a remoção da máscara
+      if (/\D/.test(value.replace(/\D/g, ''))) {
         return;
       }
       formattedValue = formatInput(value, '(99) 99999-9999');
     } else if (name === 'zipCode') {
       // Permite apenas números
-      if (/\D/.test(value.replace(/\D/g, ''))) { // Verifica se há não-dígitos após a remoção da máscara
+      if (/\D/.test(value.replace(/\D/g, ''))) {
         return;
       }
       formattedValue = formatInput(value, '99999-999');
@@ -187,6 +187,9 @@ export default function CreateSellersPage() {
       if (/\D/.test(value)) {
         return;
       }
+      formattedValue = value;
+    } else if (name === 'street') {
+      // Remove a restrição, permitindo qualquer caractere
       formattedValue = value;
     }
 
