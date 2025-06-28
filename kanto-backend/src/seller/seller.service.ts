@@ -6,7 +6,8 @@ import {
 import { SellerRepository } from './repository/seller.repository';
 import { CreateSellerDto } from './dto/create-seller.dto';
 import { UpdateSellerDto } from './dto/update-seller.dto';
-import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+
 
 @Injectable()
 export class SellerService {
@@ -54,7 +55,7 @@ export class SellerService {
       console.error('Erro ao criar vendedor:', error);
 
       if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error instanceof PrismaClientKnownRequestError &&
         error.code === 'P2002' &&
         Array.isArray((error.meta as any)?.target)
       ) {
