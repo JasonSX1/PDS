@@ -1,0 +1,111 @@
+/* HomePage.css */
+
+.homepage {
+  min-height: 100vh;
+  background-color: #f4f4f5;
+  color: #27272a;
+  padding: 24px;
+  font-family: sans-serif;
+}
+
+.homepage-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.homepage-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.homepage-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 50%;
+}
+
+.search-input {
+  flex-grow: 1;
+  padding: 8px;
+  border: 1px solid #d4d4d8;
+  border-radius: 4px;
+}
+
+.search-icon {
+  width: 20px;
+  height: 20px;
+  color: #71717a;
+}
+
+.homepage-icons {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  color: #27272a;
+}
+
+.homepage-nav {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 40px;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.nav-item {
+  cursor: pointer;
+  transition: text-decoration 0.2s ease;
+  color: #27272a;
+  text-decoration: none;
+}
+
+.nav-item:hover {
+  text-decoration: underline;
+}
+
+.homepage-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 768px;
+  margin: 0 auto;
+}
+
+.homepage-card {
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.homepage-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.card-icon {
+  width: 32px;
+  height: 32px;
+  color: #71717a;
+}
+
+.card-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
