@@ -7,6 +7,131 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Client {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(100)
+  email     String   @unique @db.VarChar(100)
+  phone     String   @db.VarChar(20)
+  cpf       String   @unique @db.VarChar(14)
+  addressId Int      @unique @map("idEndereco") // <-- AQUI
+  address   Address  @relation("ClientAddress", fields: [addressId], references: [id])
+  sales     Sale[]
+
+  @@map("Cliente")
+}
+
+
+model Supplier {
+  id        Int       @id @default(autoincrement())
+  name      String    @db.VarChar(100)
+  phones    String[]  @db.VarChar(20)
+  emails    String[]  @db.VarChar(100)
+  cnpj      String    @unique @db.VarChar(18)
+  addressId Int       @unique @map("idEndereco") // <-- AQUI
+  address   Address   @relation("SupplierAddress", fields: [addressId], references: [id])
+  products  Product[]
+
+  @@map("Fornecedor")
+}
+
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(50)
+  description String    @db.VarChar(255)
+  products    Product[]
+
+  @@map("Categoria")
+}
+
+model Promotion {
+  id                Int       @id @default(autoincrement())
+  name              String    @db.VarChar(100)
+  description       String    @db.VarChar(255)
+  discountPercent   Float
+  startDate         DateTime  @map("dataInicio")
+  endDate           DateTime  @map("dataTermino")
+  products          Product[]
+
+  @@map("Promocao")
+}
+
+model Product {
+  id          Int               @id @default(autoincrement())
+  name        String            @db.VarChar(100)
+  price       Float
+  size        String            @db.VarChar(10)
+  color       String            @db.VarChar(30)
+  supplierId  Int               @map("fornecedorID")
+  categoryId  Int
+  promotionId Int?
+  supplier    Supplier          @relation(fields: [supplierId], references: [id])
+  category    Category          @relation(fields: [categoryId], references: [id])
+  promotion   Promotion?        @relation(fields: [promotionId], references: [id])
+  stock       Stock?
+  orderItems  OrderProduct[]
+  saleItems   SaleProduct[]
+
+  @@map("Produto")
+}
+
+model Stock {
+  id        Int     @id @default(autoincrement())
+  productId Int     @unique
+  quantity  Int
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("Estoque")
+}
+
+model Order {
+  id         Int            @id @default(autoincrement())
+  date       DateTime
+  status     String         @db.VarChar(50)
+  total      Float
+  items      OrderProduct[]
+
+  @@map("Pedido")
+}
+
+model OrderProduct {
+  id         Int     @id @default(autoincrement())
+  orderId    Int     @map("idPedido")
+  productId  Int
+  quantity   Int
+  unitPrice  Float
+  order      Order   @relation(fields: [orderId], references: [id])
+  product    Product @relation(fields: [productId], references: [id])
+
+  @@map("PedidoProduto")
+}
+
+model Sale {
+  id         Int           @id @default(autoincrement())
+  clientId   Int
+  sellerId   Int
+  date       DateTime
+  status     String        @db.VarChar(50)
+  total      Float
+  client     Client        @relation(fields: [clientId], references: [id])
+  seller     Seller        @relation(fields: [sellerId], references: [id])
+  items      SaleProduct[]
+
+  @@map("Venda")
+}
+
+model SaleProduct {
+  id         Int     @id @default(autoincrement())
+  saleId     Int     @map("idVenda")
+  productId  Int
+  quantity   Int
+  unitPrice  Float
+  sale       Sale    @relation(fields: [saleId], references: [id])
+  product    Product @relation(fields: [productId], references: [id])
+
+  @@map("VendaProduto")
+}
+
 model Seller {
   id        Int      @id @default(autoincrement())
   name      String   @db.VarChar(100)
@@ -15,7 +140,8 @@ model Seller {
   cpf       String   @unique @db.VarChar(14)
   birthDate DateTime @map("dataNasc")
   addressId Int      @unique @map("idEndereco")
-  address   Address  @relation(fields: [addressId], references: [id])
+  address   Address  @relation("SellerAddress", fields: [addressId], references: [id])
+  sales     Sale[]
 
   @@map("Vendedor")
 }
@@ -27,7 +153,11 @@ model Address {
   city    String  @map("cidade") @db.VarChar(50)
   state   String  @map("estado") @db.VarChar(2)
   zipCode String  @map("cep") @db.VarChar(9)
-  seller  Seller?
+
+  seller   Seller?   @relation("SellerAddress")
+  client   Client?   @relation("ClientAddress")
+  supplier Supplier? @relation("SupplierAddress")
 
   @@map("Endereco")
 }
+
