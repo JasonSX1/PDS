@@ -166,12 +166,14 @@ export class SaleService {
     }
 
     try {
-      // Validar se o total corresponde aos itens (se items for fornecido)
-      if (dto.items && dto.total) {
-        const calculatedTotal = dto.items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
-        if (Math.abs(calculatedTotal - dto.total) > 0.01) {
-          throw new BadRequestException('O total da venda não corresponde à soma dos itens');
-        }
+      // Recalcular o total se os itens forem fornecidos, para evitar o erro de "total não corresponde"
+      // e priorizar a verificação de estoque quando o usuário tentar adicionar mais itens.
+      if (dto.items) {
+        const recalculatedTotal = dto.items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+        // Atualiza o DTO com o total recalculado.
+        // Isso sobrescreve qualquer `total` enviado que seja inconsistente.
+        // Se o `total` não foi enviado, ele será adicionado.
+        dto.total = recalculatedTotal;
       }
 
       // Se os itens estão sendo atualizados, verificar estoque
@@ -263,16 +265,23 @@ export class SaleService {
   }
 
   async remove(id: number) {
-    const existingSale = await this.repository.findById(id);
+    const existingSale = await this.repository.findById(id); // Assume que este método já traz os itens da venda, e idealmente, o nome do produto.
     if (!existingSale) {
       throw new NotFoundException('Venda não encontrada para remoção.');
     }
 
     try {
-      // Usar transação para garantir consistência
-      return await this.prisma.$transaction(async (tx) => {
-        // Restaurar estoque de cada produto antes de excluir a venda
-        for (const item of existingSale.items) {
+      // Coleta as informações dos itens que terão o estoque restaurado
+      const itemsToRestore = existingSale.items.map(item => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        productName: (item as any).product?.name // Acessa o nome do produto se estiver disponível na relação
+      }));
+
+      // Inicia a transação para garantir a consistência
+      const deletedSale = await this.prisma.$transaction(async (tx) => {
+        // Restaura o estoque de cada produto antes de excluir a venda
+        for (const item of itemsToRestore) {
           await tx.stock.update({
             where: { productId: item.productId },
             data: {
@@ -283,12 +292,26 @@ export class SaleService {
           });
         }
 
-        // Remover a venda
+        // Remove a venda
         return await this.repository.remove(id);
       });
+
+      // Constrói a mensagem de alerta com base nos itens restaurados
+      const alertMessage = itemsToRestore.length > 0
+        ? `As seguintes unidades foram retornadas ao estoque: ${itemsToRestore.map(item => `${item.quantity}x ${item.productName || `Produto ID: ${item.productId}`}`).join(', ')}.`
+        : 'Nenhuma unidade de produto foi retornada ao estoque para esta venda.';
+
+      // Retorna uma resposta estruturada com a mensagem de alerta
+      return {
+        message: 'Venda removida com sucesso.',
+        restoredItems: itemsToRestore,
+        alert: alertMessage,
+        deletedSale: deletedSale // Opcional: Inclui os detalhes da venda excluída
+      };
+
     } catch (error) {
       console.error('Erro ao remover venda:', error);
       throw new InternalServerErrorException('Erro ao remover a venda.');
     }
   }
-} 
+}

@@ -4,6 +4,7 @@ import CreatableSelect from 'react-select/creatable';
 import Header from "../components/ui/header";
 import Navbar from "../components/ui/navbar";
 import api from "../lib/axiosConfig";
+import { useNotification } from '../components/ui/notification';
 
 interface Supplier { id: number; name: string; status?: string; }
 interface SimpleOption { value: string; label: string; }
@@ -23,6 +24,7 @@ function formatarPreco(valor: string): string {
 }
 
 export default function CreateProductsPage() {
+  const { showSuccess, showError, NotificationContainer } = useNotification();
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -70,7 +72,7 @@ export default function CreateProductsPage() {
       };
       const response = await api.post("/product", payload);
       if (response.status !== 201 && response.status !== 200) throw new Error(response.data.message || "Erro ao cadastrar produto");
-      alert("Produto cadastrado com sucesso!");
+      showSuccess("Produto cadastrado com sucesso!");
       setFormData({ name: "", price: "", size: "", color: "", quantity: "", supplierId: ""});
     } catch (error: any) {
       setError(error.response?.data?.message || error.message || "Erro desconhecido");
@@ -187,6 +189,7 @@ export default function CreateProductsPage() {
         {error && <div style={{ color: "red", marginTop: 12 }}>{error}</div>}
         <button type="submit" className="submit-button">Cadastrar</button>
       </form>
+      <NotificationContainer />
     </div>
   );
 }

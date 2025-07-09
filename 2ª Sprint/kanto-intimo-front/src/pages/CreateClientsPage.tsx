@@ -3,6 +3,7 @@ import "../styles/CreateClientsPage.css";
 import Header from "../components/ui/header";
 import Navbar from "../components/ui/navbar";
 import api from "../lib/axiosConfig";
+import { useNotification } from '../components/ui/notification';
 
 const estadosBrasileiros = [
   "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO",
@@ -26,6 +27,7 @@ const formatInput = (value: string, pattern: string) => {
 };
 
 export default function CreateClientsPage() {
+  const { showSuccess, showError, NotificationContainer } = useNotification();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -140,7 +142,7 @@ export default function CreateClientsPage() {
       };
       const response = await api.post("/client", payload);
       if (response.status !== 201) throw new Error(response.data.message || "Erro ao cadastrar");
-      alert("Cliente cadastrado com sucesso!");
+      showSuccess("Cliente cadastrado com sucesso!");
       setFormData({
         name: "",
         email: "",
@@ -270,6 +272,7 @@ export default function CreateClientsPage() {
         {error && <div style={{ color: "red", marginTop: 12 }}>{error}</div>}
         <button type="submit" className="submit-button">Cadastrar</button>
       </form>
+      <NotificationContainer />
     </div>
   );
 } 

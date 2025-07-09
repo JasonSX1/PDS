@@ -4,6 +4,7 @@ import Header from "../components/ui/header";
 import Navbar from "../components/ui/navbar";
 import { Plus, X } from "lucide-react";
 import api from "../lib/axiosConfig";
+import { useNotification } from '../components/ui/notification';
 
 // Lista de estados brasileiros
 const estadosBrasileiros = [
@@ -32,6 +33,7 @@ const formatInput = (value: string, pattern: string) => {
 };
 
 export default function CreateSuppliersPage() {
+  const { showSuccess, showError, NotificationContainer } = useNotification();
   const [formData, setFormData] = useState({
     name: "",
     cnpj: "",
@@ -207,7 +209,7 @@ export default function CreateSuppliersPage() {
         throw new Error(response.data.message || "Erro ao cadastrar");
       }
 
-      alert("Fornecedor cadastrado com sucesso!");
+      showSuccess("Fornecedor cadastrado com sucesso!");
       setFormData({
         name: "",
         cnpj: "",
@@ -383,6 +385,7 @@ export default function CreateSuppliersPage() {
           Cadastrar
         </button>
       </form>
+      <NotificationContainer />
     </div>
   );
-} 
+}

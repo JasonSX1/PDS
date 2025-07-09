@@ -52,7 +52,7 @@
 
 .sales-list-header {
   display: grid;
-  grid-template-columns: 0.5fr 1fr 2fr 2fr 1fr 1fr 1fr 1fr;
+  grid-template-columns: 0.8fr 1.2fr 2fr 2fr 1fr 1fr 1.5fr;
   gap: 16px;
   padding: 16px;
   background-color: #f8fafc;
@@ -63,7 +63,7 @@
 
 .sales-list-item {
   display: grid;
-  grid-template-columns: 0.5fr 1fr 2fr 2fr 1fr 1fr 1fr 1fr;
+  grid-template-columns: 0.8fr 1.2fr 2fr 2fr 1fr 1fr 1.5fr;
   gap: 16px;
   padding: 16px;
   border-bottom: 1px solid #f1f5f9;

@@ -5,6 +5,7 @@ import Navbar from "../components/ui/navbar";
 import { Trash2, Pencil, X, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../lib/axiosConfig';
+import { useNotification } from '../components/ui/notification';
 
 interface SaleItem {
   id: number;
@@ -76,6 +77,7 @@ interface ApiResponse {
 }
 
 export default function ReadSalesPage() {
+  const { showSuccess, showError, NotificationContainer } = useNotification();
   const [sales, setSales] = useState<Sale[]>([]);
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
@@ -137,7 +139,7 @@ export default function ReadSalesPage() {
       setIsEditModalOpen(true);
       setEditError('');
     } catch (error: any) {
-      alert('Erro ao carregar dados da venda para edição.');
+      showError('Erro ao carregar dados da venda para edição.');
     }
   };
 
@@ -179,7 +181,7 @@ export default function ReadSalesPage() {
           );
           setSales(updatedSales);
           closeEditModal();
-          alert('Venda atualizada com sucesso!');
+          showSuccess('Venda atualizada com sucesso!');
         } else {
           setEditError(response.data?.message || 'Erro ao atualizar venda.');
         }
@@ -209,10 +211,10 @@ export default function ReadSalesPage() {
           setDeleteSuccessMessage('Venda excluída com sucesso!');
           setTimeout(() => setDeleteSuccessMessage(''), 3000);
         } else {
-          alert('Erro ao excluir venda.');
+          showError('Erro ao excluir venda.');
         }
       } catch (error: any) {
-        alert('Erro ao excluir venda.');
+        showError('Erro ao excluir venda.');
       } finally {
         closeDeleteConfirmation();
       }
@@ -248,6 +250,7 @@ export default function ReadSalesPage() {
 
       <div className="sales-list-container">
         <div className="sales-list-header">
+          <div>ID</div>
           <div>Data</div>
           <div>Cliente</div>
           <div>Vendedor</div>
@@ -258,6 +261,7 @@ export default function ReadSalesPage() {
         {filteredSales.length > 0 ? (
           filteredSales.map((sale) => (
             <div key={sale.id} className="sales-list-item">
+              <div>#{sale.id}</div>
               <div>{formatDate(sale.date)}</div>
               <div>{sale.client.name}</div>
               <div>{sale.seller.name}</div>
@@ -484,6 +488,7 @@ export default function ReadSalesPage() {
         <button onClick={() => setPage(totalPages)} disabled={page === totalPages}>»</button>
         <button className="update-button" onClick={() => window.location.reload()}>Atualizar</button>
       </div>
+      <NotificationContainer />
     </div>
   );
 } 

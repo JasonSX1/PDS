@@ -5,6 +5,7 @@ import Navbar from "../components/ui/navbar";
 import { Trash2, Pencil, MoreVertical, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../lib/axiosConfig';
+import { useNotification } from '../components/ui/notification';
 
 const SIZE_OPTIONS = ["P", "M", "G", "GG", "XG"];
 const COLOR_OPTIONS = ["Preto", "Branco", "Vermelho", "Azul", "Rosa", "Bege", "Cinza", "Verde"];
@@ -34,6 +35,7 @@ interface ApiResponse {
 }
 
 export default function ReadProductsPage() {
+  const { showSuccess, showError, NotificationContainer } = useNotification();
   const [products, setProducts] = useState<Product[]>([]);
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
@@ -77,7 +79,7 @@ export default function ReadProductsPage() {
       setIsEditModalOpen(true);
       setEditError('');
     } catch (error: any) {
-      alert('Erro ao carregar dados do produto para edição.');
+      showError('Erro ao carregar dados do produto para edição.');
     }
   };
 
@@ -116,7 +118,7 @@ export default function ReadProductsPage() {
           );
           setProducts(updatedProducts);
           closeEditModal();
-          alert('Produto atualizado com sucesso!');
+          showSuccess('Produto atualizado com sucesso!');
         } else {
           setEditError(response.data?.message || 'Erro ao atualizar produto.');
         }
@@ -146,10 +148,10 @@ export default function ReadProductsPage() {
           setDeleteSuccessMessage('Produto excluído com sucesso!');
           setTimeout(() => setDeleteSuccessMessage(''), 3000);
         } else {
-          alert('Erro ao excluir produto.');
+          showError('Erro ao excluir produto.');
         }
       } catch (error: any) {
-        alert('Erro ao excluir produto.');
+        showError('Erro ao excluir produto.');
       } finally {
         closeDeleteConfirmation();
       }
@@ -286,6 +288,7 @@ export default function ReadProductsPage() {
         <button onClick={() => setPage(totalPages)} disabled={page === totalPages}>»</button>
         <button className="update-button" onClick={() => window.location.reload()}>Atualizar</button>
       </div>
+      <NotificationContainer />
     </div>
   );
 } 

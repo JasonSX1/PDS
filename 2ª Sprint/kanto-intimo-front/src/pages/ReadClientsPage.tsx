@@ -5,6 +5,7 @@ import Navbar from "../components/ui/navbar";
 import { Trash2, Pencil, MoreVertical, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../lib/axiosConfig';
+import { useNotification } from '../components/ui/notification';
 
 interface Address {
   street: string;
@@ -57,6 +58,7 @@ const formatInput = (value: string, pattern: string) => {
 };
 
 function ReadClientsPage() {
+  const { showSuccess, showError, NotificationContainer } = useNotification();
   const [clients, setClients] = useState<Client[]>([]);
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
@@ -95,7 +97,7 @@ function ReadClientsPage() {
       setIsEditModalOpen(true);
       setEditError('');
     } catch (error: any) {
-      alert('Erro ao carregar dados do cliente para edição.');
+      showError('Erro ao carregar dados do cliente para edição.');
     }
   };
 
@@ -173,7 +175,7 @@ function ReadClientsPage() {
           );
           setClients(updatedClients);
           closeEditModal();
-          alert('Cliente atualizado com sucesso!');
+          showSuccess('Cliente atualizado com sucesso!');
         } else {
           setEditError(response.data?.message || 'Erro ao atualizar cliente.');
         }
@@ -203,10 +205,10 @@ function ReadClientsPage() {
           setDeleteSuccessMessage('Cliente excluído com sucesso!');
           setTimeout(() => setDeleteSuccessMessage(''), 3000);
         } else {
-          alert('Erro ao excluir cliente.');
+          showError('Erro ao excluir cliente.');
         }
       } catch (error: any) {
-        alert('Erro ao excluir cliente.');
+        showError('Erro ao excluir cliente.');
       } finally {
         closeDeleteConfirmation();
       }
@@ -364,6 +366,7 @@ function ReadClientsPage() {
         <button onClick={() => setPage(totalPages)} disabled={page === totalPages}>»</button>
         <button className="update-button" onClick={() => window.location.reload()}>Atualizar</button>
       </div>
+      <NotificationContainer />
     </div>
   );
 }

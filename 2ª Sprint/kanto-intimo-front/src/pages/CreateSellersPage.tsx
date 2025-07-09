@@ -6,6 +6,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Calendar } from "lucide-react";
 import api from "../lib/axiosConfig";
+import { useNotification } from '../components/ui/notification';
 
 // Lista de estados brasileiros
 const estadosBrasileiros = [
@@ -34,6 +35,7 @@ const formatInput = (value: string, pattern: string) => {
 };
 
 export default function CreateSellersPage() {
+  const { showSuccess, showError, NotificationContainer } = useNotification();
   const [dateInput, setDateInput] = useState("");
   const [formData, setFormData] = useState({
     name: "",
@@ -204,7 +206,7 @@ export default function CreateSellersPage() {
         throw new Error(response.data.message || "Erro ao cadastrar");
       }
 
-      alert("Vendedor cadastrado com sucesso!");
+      showSuccess("Vendedor cadastrado com sucesso!");
       setFormData({
         name: "",
         lastName: "",
@@ -384,6 +386,7 @@ export default function CreateSellersPage() {
           Cadastrar
         </button>
       </form>
+      <NotificationContainer />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import Header from "../components/ui/header";
 import Navbar from "../components/ui/navbar";
 import { Plus, X } from "lucide-react";
 import api from "../lib/axiosConfig";
+import { useNotification } from '../components/ui/notification';
 
 interface Client {
   id: number;
@@ -36,6 +37,7 @@ interface SaleItem {
 }
 
 export default function CreateSalesPage() {
+  const { showSuccess, showError, NotificationContainer } = useNotification();
   const [formData, setFormData] = useState({
     clientId: "",
     sellerId: "",
@@ -151,7 +153,7 @@ export default function CreateSalesPage() {
       const response = await api.post("/sale", payload);
       if (response.status !== 201) throw new Error(response.data.message || "Erro ao cadastrar venda");
       
-      alert("Venda cadastrada com sucesso!");
+      showSuccess("Venda cadastrada com sucesso!");
       setFormData({ 
         clientId: "", 
         sellerId: "", 
@@ -269,6 +271,7 @@ export default function CreateSalesPage() {
           Cadastrar Venda
         </button>
       </form>
+      <NotificationContainer />
     </div>
   );
 } 

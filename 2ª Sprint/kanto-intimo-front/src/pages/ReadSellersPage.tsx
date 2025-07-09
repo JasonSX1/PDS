@@ -5,6 +5,7 @@ import Navbar from "../components/ui/navbar";
 import { Trash2, Pencil, MoreVertical, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../lib/axiosConfig';
+import { useNotification } from '../components/ui/notification';
 
 interface Address {
   street: string;
@@ -59,6 +60,7 @@ const formatInput = (value: string, pattern: string) => {
 };
 
 function ReadSellersPage() {
+  const { showSuccess, showError, NotificationContainer } = useNotification();
   const [sellers, setSellers] = useState<Seller[]>([]);
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
@@ -105,7 +107,7 @@ function ReadSellersPage() {
       setEditError('');
     } catch (error: any) {
       console.error('Erro ao carregar dados do vendedor para edição:', error);
-      alert('Erro ao carregar dados do vendedor para edição.');
+      showError('Erro ao carregar dados do vendedor para edição.');
     }
   };
 
@@ -209,7 +211,7 @@ function ReadSellersPage() {
           );
           setSellers(updatedSellers);
           closeEditModal();
-          alert('Vendedor atualizado com sucesso!');
+          showSuccess('Vendedor atualizado com sucesso!');
         } else {
           console.error('Erro ao atualizar vendedor:', response.data);
           setEditError(response.data?.message || 'Erro ao atualizar vendedor.');
@@ -243,11 +245,11 @@ function ReadSellersPage() {
           setTimeout(() => setDeleteSuccessMessage(''), 3000);
         } else {
           console.error('Erro ao excluir vendedor:', response.data);
-          alert('Erro ao excluir vendedor.');
+          showError('Erro ao excluir vendedor.');
         }
       } catch (error: any) {
         console.error('Erro ao enviar exclusão:', error);
-        alert('Erro ao excluir vendedor.');
+        showError('Erro ao excluir vendedor.');
       } finally {
         closeDeleteConfirmation();
       }
@@ -422,6 +424,7 @@ function ReadSellersPage() {
         <button onClick={() => setPage(totalPages)} disabled={page === totalPages}>»</button>
         <button className="update-button" onClick={() => window.location.reload()}>Atualizar</button>
       </div>
+      <NotificationContainer />
     </div>
   );
 }

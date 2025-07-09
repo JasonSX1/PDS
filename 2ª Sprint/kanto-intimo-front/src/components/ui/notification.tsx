@@ -14,7 +14,7 @@ const Notification: React.FC<NotificationProps> = ({
   type,
   title,
   message,
-  duration = 3000,
+  duration = 5000, // Aumentado de 3000 para 5000ms (5 segundos)
   onClose
 }) => {
   const [isVisible, setIsVisible] = useState(true);
