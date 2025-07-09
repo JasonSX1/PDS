@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsNumber, IsOptional, Min } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber, IsOptional, Min, IsArray, ArrayNotEmpty } from 'class-validator';
 
 export class CreateProductDto {
   @IsNotEmpty()
@@ -21,9 +21,10 @@ export class CreateProductDto {
   @IsNumber()
   supplierId: number;
 
-  @IsNotEmpty()
-  @IsNumber()
-  categoryId: number;
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsNumber({}, { each: true })
+  categoryIds: number[];
 
   @IsOptional()
   @IsNumber()
@@ -33,4 +34,4 @@ export class CreateProductDto {
   @IsNumber()
   @Min(0)
   quantity: number;
-} 
+}

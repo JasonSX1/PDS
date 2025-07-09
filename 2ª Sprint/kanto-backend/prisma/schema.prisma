@@ -39,7 +39,7 @@ model Category {
   id          Int       @id @default(autoincrement())
   name        String    @db.VarChar(50)
   description String    @db.VarChar(255)
-  products    Product[]
+  products    Product[]         @relation("ProductCategories")
 
   @@unique([name])
   @@map("Categoria")
@@ -64,14 +64,13 @@ model Product {
   size        String            @db.VarChar(10)
   color       String            @db.VarChar(30)
   supplierId  Int               @map("fornecedorID")
-  categoryId  Int?
   promotionId Int?
   supplier    Supplier          @relation(fields: [supplierId], references: [id])
-  category    Category?         @relation(fields: [categoryId], references: [id])
   promotion   Promotion?        @relation(fields: [promotionId], references: [id])
   stock       Stock?
   orderItems  OrderProduct[]
   saleItems   SaleProduct[]
+  categories  Category[]        @relation("ProductCategories")
 
   @@map("Produto")
 }

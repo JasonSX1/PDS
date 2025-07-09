@@ -5,7 +5,7 @@ import { UpdateProductDto } from '../dto/update-product.dto';
 
 @Injectable()
 export class ProductRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async paginate(
     page: number,
@@ -28,7 +28,7 @@ export class ProductRepository {
       },
       include: {
         supplier: true,
-        category: true,
+        categories: true,
         promotion: true,
         stock: true,
       },
@@ -56,7 +56,7 @@ export class ProductRepository {
       where: { id },
       include: {
         supplier: true,
-        category: true,
+        categories: true,
         promotion: true,
         stock: true,
       },
@@ -76,7 +76,9 @@ export class ProductRepository {
         size: dto.size,
         color: dto.color,
         supplierId: dto.supplierId,
-        categoryId: dto.categoryId ?? null,
+        categories: {
+          connect: dto.categoryIds.map(id => ({ id })),
+        },
         promotionId: dto.promotionId,
       },
     });
@@ -92,7 +94,7 @@ export class ProductRepository {
       where: { id: product.id },
       include: {
         supplier: true,
-        category: true,
+        categories: true,
         promotion: true,
         stock: true,
       },
@@ -109,8 +111,12 @@ export class ProductRepository {
         size: dto.size,
         color: dto.color,
         supplierId: dto.supplierId,
-        categoryId: dto.categoryId,
         promotionId: dto.promotionId,
+        ...(dto.categoryIds && {
+          categories: {
+            set: dto.categoryIds.map(id => ({ id })),
+          },
+        }),
       },
     });
 
@@ -126,7 +132,7 @@ export class ProductRepository {
       where: { id: product.id },
       include: {
         supplier: true,
-        category: true,
+        categories: true,
         promotion: true,
         stock: true,
       },
