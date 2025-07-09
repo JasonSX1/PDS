@@ -34,17 +34,6 @@ model Supplier {
   @@map("Fornecedor")
 }
 
-
-model Category {
-  id          Int       @id @default(autoincrement())
-  name        String    @db.VarChar(50)
-  description String    @db.VarChar(255)
-  products    Product[]         @relation("ProductCategories")
-
-  @@unique([name])
-  @@map("Categoria")
-}
-
 model Promotion {
   id                Int       @id @default(autoincrement())
   name              String    @db.VarChar(100)
@@ -70,7 +59,6 @@ model Product {
   stock       Stock?
   orderItems  OrderProduct[]
   saleItems   SaleProduct[]
-  categories  Category[]        @relation("ProductCategories")
 
   @@map("Produto")
 }

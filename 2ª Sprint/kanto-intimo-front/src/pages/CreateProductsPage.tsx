@@ -6,7 +6,6 @@ import Navbar from "../components/ui/navbar";
 import api from "../lib/axiosConfig";
 
 interface Supplier { id: number; name: string; }
-interface CategoryOption { value: number; label: string; }
 interface SimpleOption { value: string; label: string; }
 
 const INITIAL_SIZE_OPTIONS: SimpleOption[] = ["P", "M", "G", "GG", "XG"].map(s => ({ value: s, label: s }));
@@ -30,11 +29,9 @@ export default function CreateProductsPage() {
     size: "",
     color: "",
     quantity: "",
-    supplierId: "",
-    categoryIds: [] as number[]
+    supplierId: ""
   });
 
-  const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
   const [sizeOptions, setSizeOptions] = useState<SimpleOption[]>(INITIAL_SIZE_OPTIONS);
   const [colorOptions, setColorOptions] = useState<SimpleOption[]>(INITIAL_COLOR_OPTIONS);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -42,15 +39,6 @@ export default function CreateProductsPage() {
 
   useEffect(() => {
     api.get("/supplier/pages").then(res => setSuppliers(res.data.results || []));
-    api.get("/category").then(res => {
-      const apiCategories: CategoryOption[] = res.data.results.map(
-        (cat: { id: number; name: string }) => ({
-          value: cat.id,
-          label: cat.name
-        })
-      );
-      setCategoryOptions(apiCategories);
-    });
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -65,7 +53,7 @@ export default function CreateProductsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    if (!formData.name || !formData.price || !formData.size || !formData.color || !formData.quantity || !formData.supplierId || formData.categoryIds.length === 0) {
+    if (!formData.name || !formData.price || !formData.size || !formData.color || !formData.quantity || !formData.supplierId) {
       setError("Preencha todos os campos obrigatórios.");
       return;
     }
@@ -78,13 +66,12 @@ export default function CreateProductsPage() {
         size: formData.size,
         color: formData.color,
         quantity: parseInt(formData.quantity, 10),
-        supplierId: Number(formData.supplierId),
-        categoryIds: formData.categoryIds
+        supplierId: Number(formData.supplierId)
       };
       const response = await api.post("/product", payload);
       if (response.status !== 201 && response.status !== 200) throw new Error(response.data.message || "Erro ao cadastrar produto");
       alert("Produto cadastrado com sucesso!");
-      setFormData({ name: "", price: "", size: "", color: "", quantity: "", supplierId: "", categoryIds: [] });
+      setFormData({ name: "", price: "", size: "", color: "", quantity: "", supplierId: ""});
     } catch (error: any) {
       setError(error.response?.data?.message || error.message || "Erro desconhecido");
     }
@@ -160,50 +147,7 @@ export default function CreateProductsPage() {
             placeholder="Selecione ou crie uma cor"
           />
         </div>
-        <div className="form-group">
-          <CreatableSelect
-            isMulti
-            isClearable
-            options={categoryOptions}
-            classNamePrefix="select"
-            onChange={(newValues) => {
-              const values = (newValues || []) as CategoryOption[];
-              setFormData(prev => ({
-                ...prev,
-                categoryIds: values.map(v => v.value)
-              }));
-            }}
-            onCreateOption={async (inputValue) => {
-              try {
-                const res = await api.post("/category", {
-                  name: inputValue,
-                  description: "Categoria criada manualmente"
-                });
 
-                const newCategory = res.data;
-
-                const newOption: CategoryOption = {
-                  value: newCategory.id,
-                  label: newCategory.name,
-                };
-
-                setCategoryOptions(prev => [...prev, newOption]);
-
-                setFormData(prev => ({
-                  ...prev,
-                  categoryIds: [...prev.categoryIds, newCategory.id],
-                }));
-              } catch (err: any) {
-                console.error("Erro ao criar categoria:", err);
-                setError(err.response?.data?.message || "Erro ao criar categoria");
-              }
-            }}
-            value={categoryOptions.filter(opt => formData.categoryIds.includes(opt.value))}
-
-            placeholder="Selecione ou crie uma categoria"
-          />
-
-        </div>
         <div className="form-group">
           <input
             type="number"

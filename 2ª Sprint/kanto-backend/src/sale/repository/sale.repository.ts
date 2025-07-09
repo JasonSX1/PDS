@@ -55,8 +55,7 @@ export class SaleRepository {
           include: {
             product: {
               include: {
-                supplier: true,
-                categories: true,
+                supplier: true
               },
             },
           },
@@ -109,7 +108,6 @@ export class SaleRepository {
             product: {
               include: {
                 supplier: true,
-                categories: true,
               },
             },
           },
@@ -157,7 +155,6 @@ export class SaleRepository {
             product: {
               include: {
                 supplier: true,
-                categories: true,
               },
             },
           },
@@ -209,7 +206,6 @@ export class SaleRepository {
             product: {
               include: {
                 supplier: true,
-                categories: true,
               },
             },
           },

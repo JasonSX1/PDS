@@ -28,7 +28,6 @@ export class ProductRepository {
       },
       include: {
         supplier: true,
-        categories: true,
         promotion: true,
         stock: true,
       },
@@ -56,7 +55,6 @@ export class ProductRepository {
       where: { id },
       include: {
         supplier: true,
-        categories: true,
         promotion: true,
         stock: true,
       },
@@ -76,9 +74,6 @@ export class ProductRepository {
         size: dto.size,
         color: dto.color,
         supplierId: dto.supplierId,
-        categories: {
-          connect: dto.categoryIds.map(id => ({ id })),
-        },
         promotionId: dto.promotionId,
       },
     });
@@ -94,7 +89,6 @@ export class ProductRepository {
       where: { id: product.id },
       include: {
         supplier: true,
-        categories: true,
         promotion: true,
         stock: true,
       },
@@ -111,12 +105,7 @@ export class ProductRepository {
         size: dto.size,
         color: dto.color,
         supplierId: dto.supplierId,
-        promotionId: dto.promotionId,
-        ...(dto.categoryIds && {
-          categories: {
-            set: dto.categoryIds.map(id => ({ id })),
-          },
-        }),
+        promotionId: dto.promotionId
       },
     });
 
@@ -132,7 +121,6 @@ export class ProductRepository {
       where: { id: product.id },
       include: {
         supplier: true,
-        categories: true,
         promotion: true,
         stock: true,
       },
