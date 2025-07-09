@@ -4,14 +4,14 @@ import {
   InternalServerErrorException,
   NotFoundException
 } from '@nestjs/common';
-import { ProductRepository } from './repository/product.repository';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+import { ClientRepository } from './repository/client.repository';
+import { CreateClientDto } from './dto/create-client.dto';
+import { UpdateClientDto } from './dto/update-client.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
-export class ProductService {
-  constructor(private readonly repository: ProductRepository) {}
+export class ClientService {
+  constructor(private readonly repository: ClientRepository) {}
 
   async paginate(
     page: number,
@@ -48,36 +48,41 @@ export class ProductService {
     return await this.repository.findById(id);
   }
 
-  async create(dto: CreateProductDto) {
+  async create(dto: CreateClientDto) {
     try {
       return await this.repository.create(dto);
     } catch (error) {
-      console.error('Erro ao criar produto:', error);
+      console.error('Erro ao criar cliente:', error);
       if (
         error instanceof PrismaClientKnownRequestError &&
         error.code === 'P2002' &&
         Array.isArray((error.meta as any)?.target)
       ) {
         const targetFields = (error.meta as any).target as string[];
-        // Exemplo: se algum campo for único no Product, pode tratar aqui
+        if (targetFields.includes('email')) {
+          throw new BadRequestException('Já existe um cliente com este e-mail.');
+        }
+        if (targetFields.includes('cpf')) {
+          throw new BadRequestException('Já existe um cliente com este CPF.');
+        }
       }
-      throw new InternalServerErrorException('Erro ao criar o produto.');
+      throw new InternalServerErrorException('Erro ao criar o cliente.');
     }
   }
 
-  async update(id: number, dto: UpdateProductDto) {
-    const existingProduct = await this.repository.findById(id);
-    if (!existingProduct) {
-      throw new NotFoundException('Produto não encontrado para atualização.');
+  async update(id: number, dto: UpdateClientDto) {
+    const existingClient = await this.repository.findById(id);
+    if (!existingClient) {
+      throw new NotFoundException('Cliente não encontrado para atualização.');
     }
     return await this.repository.update(id, dto);
   }
 
   async remove(id: number) {
-    const existingProduct = await this.repository.findById(id);
-    if (!existingProduct) {
-      throw new NotFoundException('Produto não encontrado para remoção.');
+    const existingClient = await this.repository.findById(id);
+    if (!existingClient) {
+      throw new NotFoundException('Cliente não encontrado para remoção.');
     }
     return await this.repository.remove(id);
   }
-}
+} 

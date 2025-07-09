@@ -1,5 +1,79 @@
 /* HomePage.css */
 
+body.dark-mode {
+  background-color: #18181b !important;
+  color: #f4f4f5 !important;
+}
+
+body.dark-mode .homepage,
+body.dark-mode .homepage-header,
+body.dark-mode .homepage-grid,
+body.dark-mode .homepage-card,
+body.dark-mode .card-content,
+body.dark-mode .products-container,
+body.dark-mode .read-products-container,
+body.dark-mode .suppliers-container,
+body.dark-mode .read-suppliers-container,
+body.dark-mode .sales-container,
+body.dark-mode .read-sales-container,
+body.dark-mode .sellers-container,
+body.dark-mode .read-sellers-container {
+  background-color: #23232a !important;
+  color: #f4f4f5 !important;
+}
+
+body.dark-mode .homepage-card,
+body.dark-mode .card-content,
+body.dark-mode .products-list-container,
+body.dark-mode .suppliers-list-container,
+body.dark-mode .sales-list-container,
+body.dark-mode .sellers-list-container {
+  background-color: #23232a !important;
+  color: #f4f4f5 !important;
+  border-color: #333 !important;
+}
+
+body.dark-mode .products-list-header,
+body.dark-mode .suppliers-list-header,
+body.dark-mode .sales-list-header,
+body.dark-mode .sellers-list-header {
+  background-color: #18181b !important;
+  color: #f4f4f5 !important;
+}
+
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+  background-color: #23232a !important;
+  color: #f4f4f5 !important;
+  border-color: #333 !important;
+}
+
+body.dark-mode .edit-modal,
+body.dark-mode .delete-confirmation-modal {
+  background-color: #23232a !important;
+  color: #f4f4f5 !important;
+}
+
+body.dark-mode .edit-modal-header,
+body.dark-mode .edit-modal-footer {
+  background-color: #18181b !important;
+  color: #f4f4f5 !important;
+}
+
+body.dark-mode .products-tab.active,
+body.dark-mode .suppliers-tab.active,
+body.dark-mode .sales-tab.active,
+body.dark-mode .sellers-tab.active {
+  background-color: #333 !important;
+  color: #f4f4f5 !important;
+}
+
+body.dark-mode .icon,
+body.dark-mode .search-icon {
+  color: #f4f4f5 !important;
+}
+
 .homepage {
   min-height: 100vh;
   background-color: #f4f4f5;

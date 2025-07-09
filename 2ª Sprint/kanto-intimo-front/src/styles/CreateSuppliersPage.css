@@ -1,0 +1,152 @@
+/* CreateSuppliersPage.css */
+
+/* Reaproveitando estilos gerais do HomePage.css */
+.suppliers-container {
+  min-height: 100vh;
+  background-color: #f4f4f5;
+  color: #27272a;
+  padding: 24px;
+  font-family: sans-serif;
+}
+
+.suppliers-header {
+  display: flex;
+  justify-content: center;
+  gap: 64px;
+  margin-bottom: 16px;
+}
+
+.suppliers-tab {
+  font-weight: 500;
+  text-decoration: none;
+  color: #27272a;
+}
+
+.suppliers-tab.active {
+  font-weight: 700;
+}
+
+.supplier-form {
+  background-color: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.supplier-form input,
+.supplier-form .datepicker-input {
+  padding: 12px;
+  border: 1px solid #d4d4d8;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+  flex: 1;
+  min-width: 0;
+}
+
+.submit-button {
+  margin-top: 20px;
+  background-color: #22c55e;
+  color: white;
+  border: none;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.submit-button:hover {
+  background-color: #16a34a;
+}
+
+.address-group {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.address-group input {
+  width: 100%;
+  box-sizing: border-box;
+  flex: 1;
+  min-width: 0;
+}
+
+.address-group input[name="zipCode"] {
+  max-width: calc(50% - 6px);
+  flex: none;
+}
+
+.supplier-form label {
+  display: block;
+  margin-bottom: 4px;
+  text-align: center;
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Estilos para seções de telefones e emails */
+.phones-section,
+.emails-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-with-button {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.input-with-button input {
+  flex: 1;
+  min-width: 0;
+}
+
+.remove-button {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 40px;
+}
+
+.remove-button:hover {
+  background-color: #dc2626;
+}
+
+.add-button {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.add-button:hover {
+  background-color: #2563eb;
+} 

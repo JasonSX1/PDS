@@ -1,0 +1,165 @@
+/* CreateSalesPage.css */
+.sales-container {
+  min-height: 100vh;
+  background-color: #f4f4f5;
+  color: #27272a;
+  padding: 24px;
+  font-family: sans-serif;
+}
+
+.sales-header {
+  display: flex;
+  justify-content: center;
+  gap: 64px;
+  margin-bottom: 16px;
+}
+
+.sales-tab {
+  font-weight: 500;
+  text-decoration: none;
+  color: #27272a;
+}
+
+.sales-tab.active {
+  font-weight: 700;
+}
+
+.sale-form {
+  background-color: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+}
+
+.form-row select {
+  flex: 1;
+}
+
+.sale-form select,
+.sale-form input {
+  padding: 12px;
+  border: 1px solid #d4d4d8;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.items-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.items-section label {
+  font-weight: 600;
+  font-size: 16px;
+  color: #374151;
+}
+
+.item-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  background-color: #f9fafb;
+  border-radius: 6px;
+}
+
+.item-total {
+  font-weight: 600;
+  color: #059669;
+  min-width: 80px;
+  text-align: right;
+}
+
+.remove-button {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 40px;
+}
+
+.remove-button:hover {
+  background-color: #dc2626;
+}
+
+.add-button {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.add-button:hover {
+  background-color: #2563eb;
+}
+
+.total-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background-color: #f0f9ff;
+  border-radius: 8px;
+  border: 2px solid #0ea5e9;
+}
+
+.total-section label {
+  font-weight: 600;
+  font-size: 18px;
+  color: #0c4a6e;
+}
+
+.total-value {
+  font-weight: 700;
+  font-size: 24px;
+  color: #059669;
+}
+
+.submit-button {
+  margin-top: 20px;
+  background-color: #22c55e;
+  color: white;
+  border: none;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submit-button:hover {
+  background-color: #16a34a;
+}
+
+.submit-button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+} 

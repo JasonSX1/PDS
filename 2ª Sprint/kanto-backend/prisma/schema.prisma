@@ -41,6 +41,7 @@ model Category {
   description String    @db.VarChar(255)
   products    Product[]
 
+  @@unique([name])
   @@map("Categoria")
 }
 
@@ -63,10 +64,10 @@ model Product {
   size        String            @db.VarChar(10)
   color       String            @db.VarChar(30)
   supplierId  Int               @map("fornecedorID")
-  categoryId  Int
+  categoryId  Int?
   promotionId Int?
   supplier    Supplier          @relation(fields: [supplierId], references: [id])
-  category    Category          @relation(fields: [categoryId], references: [id])
+  category    Category?         @relation(fields: [categoryId], references: [id])
   promotion   Promotion?        @relation(fields: [promotionId], references: [id])
   stock       Stock?
   orderItems  OrderProduct[]
@@ -107,15 +108,16 @@ model OrderProduct {
 }
 
 model Sale {
-  id         Int           @id @default(autoincrement())
-  clientId   Int
-  sellerId   Int
-  date       DateTime
-  status     String        @db.VarChar(50)
-  total      Float
-  client     Client        @relation(fields: [clientId], references: [id])
-  seller     Seller        @relation(fields: [sellerId], references: [id])
-  items      SaleProduct[]
+  id            Int           @id @default(autoincrement())
+  clientId      Int
+  sellerId      Int
+  date          DateTime
+  status        String        @db.VarChar(50)
+  total         Float
+  observations  String?       @db.VarChar(500)
+  client        Client        @relation(fields: [clientId], references: [id])
+  seller        Seller        @relation(fields: [sellerId], references: [id])
+  items         SaleProduct[]
 
   @@map("Venda")
 }

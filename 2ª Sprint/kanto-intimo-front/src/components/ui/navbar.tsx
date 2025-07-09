@@ -4,13 +4,13 @@ import "../../styles/HomePage.css";
 const Navbar = () => {
   const navItems = [
     { label: "Tela Inicial", path: "/" },
-    { label: "Vendas", path: "#" },
+    { label: "Vendas", path: "/sales" },
     { label: "Vendedores", path: "/sellers" },
-    { label: "Produtos", path: "#" },
+    { label: "Produtos", path: "/products" },
     { label: "Estoque", path: "#" },
-    { label: "Fornecedores", path: "#" },
+    { label: "Fornecedores", path: "/suppliers" },
     { label: "Pedidos", path: "#" },
-    { label: "Clientes", path: "#" },
+    { label: "Clientes", path: "/clients" },
     { label: "Despesas", path: "#" },
   ];
 

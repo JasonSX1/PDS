@@ -16,14 +16,14 @@ import "../styles/HomePage.css";
 
 export default function HomePage() {
   const menuItems = [
-    { label: "VENDAS", icon: Tag },
+    { label: "VENDAS", icon: Tag, route: "/sales" },
     { label: "VENDEDORES", icon: Users, route: "/sellers" },
-    { label: "PRODUTOS", icon: Package },
-    { label: "ESTOQUE", icon: Boxes },
-    { label: "FORNECEDORES", icon: Truck },
-    { label: "PEDIDOS", icon: FileText },
-    { label: "CLIENTES", icon: ShoppingCart },
-    { label: "DESPESAS", icon: Wallet },
+    { label: "PRODUTOS", icon: Package, route: "/products" },
+    { label: "ESTOQUE", icon: Boxes, route: "/stock" },
+    { label: "FORNECEDORES", icon: Truck, route: "/suppliers" },
+    { label: "PEDIDOS", icon: FileText, route: "/orders" },
+    { label: "CLIENTES", icon: ShoppingCart, route: "/clients" },
+    { label: "DESPESAS", icon: Wallet, route: "/expenses" },
   ];
 
   return (

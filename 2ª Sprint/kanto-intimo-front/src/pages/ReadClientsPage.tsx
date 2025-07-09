@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import '../styles/ReadSellersPage.css';
+import '../styles/ReadClientsPage.css';
 import Header from "../components/ui/header";
 import Navbar from "../components/ui/navbar";
 import { Trash2, Pencil, MoreVertical, X } from 'lucide-react';
@@ -14,19 +14,17 @@ interface Address {
   zipCode: string;
 }
 
-interface Seller {
+interface Client {
   id: number;
   name: string;
-  lastName: string;
   email: string;
   phone: string;
   cpf: string;
-  birthDate: string | null;
   address: Address;
 }
 
 interface ApiResponse {
-  results: Seller[];
+  results: Client[];
   pagination: {
     length: number;
     size: number;
@@ -58,58 +56,44 @@ const formatInput = (value: string, pattern: string) => {
   return formatted;
 };
 
-function ReadSellersPage() {
-  const [sellers, setSellers] = useState<Seller[]>([]);
+function ReadClientsPage() {
+  const [clients, setClients] = useState<Client[]>([]);
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const [editingSeller, setEditingSeller] = useState<Seller | null>(null);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const [editError, setEditError] = useState<string>('');
   const [deleteSuccessMessage, setDeleteSuccessMessage] = useState<string>('');
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState<boolean>(false);
-  const [sellerToDelete, setSellerToDelete] = useState<Seller | null>(null);
-  const [search, setSearch] = useState<string>("");
+  const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.get(`/seller/pages`);
+        const response = await api.get(`/client/pages`);
         const data: ApiResponse = response.data;
-        console.log("Dados da API:", data);
-        const formattedSellers = data.results.map(seller => {
-          const [name, ...lastNameParts] = seller.name.split(' ');
-          return { ...seller, name, lastName: lastNameParts.join(' ') };
-        });
-        setSellers(formattedSellers);
+        setClients(data.results);
         setTotalPages(data.pagination.lastPage + 1);
       } catch (error: any) {
-        console.error('Erro ao buscar vendedores:', error);
+        console.error('Erro ao buscar clientes:', error);
       }
     };
     fetchData();
   }, [page]);
 
-  // Filtro de vendedores pelo nome
-  const filteredSellers = sellers.filter(seller =>
-    (`${seller.name} ${seller.lastName}`.toLowerCase().includes(search.toLowerCase()))
-  );
-
-  const openEditModal = async (sellerId: number) => {
+  const openEditModal = async (clientId: number) => {
     try {
-      const response = await api.get(`/seller/${sellerId}`);
-      const sellerData: Seller = response.data;
-      const [name, ...lastNameParts] = sellerData.name.split(' ');
-      setEditingSeller({ ...sellerData, name, lastName: lastNameParts.join(' ') });
+      const response = await api.get(`/client/${clientId}`);
+      setEditingClient(response.data);
       setIsEditModalOpen(true);
       setEditError('');
     } catch (error: any) {
-      console.error('Erro ao carregar dados do vendedor para edição:', error);
-      alert('Erro ao carregar dados do vendedor para edição.');
+      alert('Erro ao carregar dados do cliente para edição.');
     }
   };
 
   const closeEditModal = () => {
-    setEditingSeller(null);
+    setEditingClient(null);
     setIsEditModalOpen(false);
     setEditError('');
   };
@@ -117,8 +101,7 @@ function ReadSellersPage() {
   const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     let formattedValue = value;
-
-    if (name === 'name' || name === 'lastName' || name === 'address.city') {
+    if (name === 'name' || name === 'address.city') {
       if (!/^[a-zA-Z\s\u00C0-\u00FF]*$/.test(value)) return;
       formattedValue = value;
     } else if (name === 'cpf') {
@@ -137,107 +120,86 @@ function ReadSellersPage() {
       if (/\D/.test(value)) return;
       formattedValue = value;
     } else if (name === 'birthDate') {
-      formattedValue = value; // Mantém o formato de data
+      formattedValue = value;
     }
-
-    setEditingSeller(prev => {
+    setEditingClient(prev => {
       if (name.startsWith('address.')) {
         const addressPart = name.split('.')[1];
         return {
-          ...prev,
+          ...prev!,
           address: {
             ...prev!.address,
             [addressPart]: formattedValue,
           },
         };
       } else {
-        return { ...prev, [name]: formattedValue };
+        return { ...prev!, [name]: formattedValue };
       }
     });
   };
 
   const handleSaveEdit = async () => {
-    if (editingSeller) {
+    if (editingClient) {
       setEditError('');
-
-      if (!estadosBrasileiros.includes(editingSeller.address.state)) {
+      if (!estadosBrasileiros.includes(editingClient.address.state)) {
         setEditError("Por favor, selecione um estado válido (sigla de 2 letras)");
         return;
       }
-
-      if ((editingSeller.name + " " + editingSeller.lastName).length > 100) {
-        setEditError("Nome completo não pode exceder 100 caracteres");
-        return;
-      }
-
       try {
         const payload = {
-          name: `${editingSeller.name} ${editingSeller.lastName}`.trim(),
-          email: editingSeller.email,
-          phone: editingSeller.phone.replace(/\D/g, ""),
-          cpf: editingSeller.cpf.replace(/\D/g, ""),
-          birthDate: editingSeller.birthDate,
+          name: editingClient.name,
+          email: editingClient.email,
+          phone: editingClient.phone.replace(/\D/g, ""),
+          cpf: editingClient.cpf.replace(/\D/g, ""),
           address: {
-            zipCode: editingSeller.address.zipCode.replace(/\D/g, ""),
-            street: editingSeller.address.street,
-            number: editingSeller.address.number,
-            city: editingSeller.address.city,
-            state: editingSeller.address.state.toUpperCase()
+            zipCode: editingClient.address.zipCode.replace(/\D/g, ""),
+            street: editingClient.address.street,
+            number: editingClient.address.number,
+            city: editingClient.address.city,
+            state: editingClient.address.state.toUpperCase()
           }
         };
-
-        const response = await api.patch(`/seller/${editingSeller.id}`, payload);
-
+        const response = await api.patch(`/client/${editingClient.id}`, payload);
         if (response.status === 200) {
-          const [updatedName, ...updatedLastNameParts] = payload.name.split(' ');
-          const updatedLastName = updatedLastNameParts.join(' ');
-
-          const updatedSellers = sellers.map(seller =>
-            seller.id === editingSeller.id
-              ? { ...seller, name: updatedName, lastName: updatedLastName }
-              : seller
+          const updatedClients = clients.map(client =>
+            client.id === editingClient.id ? { ...client, ...editingClient } : client
           );
-          setSellers(updatedSellers);
+          setClients(updatedClients);
           closeEditModal();
-          alert('Vendedor atualizado com sucesso!');
+          alert('Cliente atualizado com sucesso!');
         } else {
-          console.error('Erro ao atualizar vendedor:', response.data);
-          setEditError(response.data?.message || 'Erro ao atualizar vendedor.');
+          setEditError(response.data?.message || 'Erro ao atualizar cliente.');
         }
       } catch (error: any) {
-        console.error('Erro ao enviar atualização:', error);
-        setEditError(error.message || 'Erro ao atualizar vendedor.');
+        setEditError(error.response?.data?.message || error.message || 'Erro ao atualizar cliente.');
       }
     }
   };
 
-  const openDeleteConfirmation = (seller: Seller) => {
-    setSellerToDelete(seller);
+  const openDeleteConfirmation = (client: Client) => {
+    setClientToDelete(client);
     setIsDeleteConfirmationOpen(true);
   };
 
   const closeDeleteConfirmation = () => {
-    setSellerToDelete(null);
+    setClientToDelete(null);
     setIsDeleteConfirmationOpen(false);
   };
 
-  const handleDeleteSeller = async () => {
-    if (sellerToDelete) {
+  const handleDeleteClient = async () => {
+    if (clientToDelete) {
       try {
-        const response = await api.delete(`/seller/${sellerToDelete.id}`);
-
+        const response = await api.delete(`/client/${clientToDelete.id}`);
         if (response.status === 204 || response.status === 200) {
-          const updatedSellers = sellers.filter(s => s.id !== sellerToDelete.id);
-          setSellers(updatedSellers);
-          setDeleteSuccessMessage('Vendedor excluído com sucesso!');
+          const updatedClients = clients.filter(c => c.id !== clientToDelete.id);
+          setClients(updatedClients);
+          setDeleteSuccessMessage('Cliente excluído com sucesso!');
           setTimeout(() => setDeleteSuccessMessage(''), 3000);
         } else {
-          console.error('Erro ao excluir vendedor:', response.data);
-          alert('Erro ao excluir vendedor.');
+          alert('Erro ao excluir cliente.');
         }
       } catch (error: any) {
-        console.error('Erro ao enviar exclusão:', error);
-        alert('Erro ao excluir vendedor.');
+        alert('Erro ao excluir cliente.');
       } finally {
         closeDeleteConfirmation();
       }
@@ -245,93 +207,68 @@ function ReadSellersPage() {
   };
 
   return (
-    <div className="read-sellers-container">
+    <div className="read-clients-container">
       <Header />
       <Navbar />
-
-      <div className="sellers-header">
-        <Link to="/sellers/create" className="sellers-tab">Cadastrar Vendedor</Link>
-        <Link to="/sellers" className="sellers-tab active">Visualizar Vendedor</Link>
+      <div className="clients-header">
+        <Link to="/clients/create" className="clients-tab">Cadastrar Cliente</Link>
+        <Link to="/clients" className="clients-tab active">Visualizar Clientes</Link>
       </div>
-
-      {/* Input de pesquisa */}
-      <div style={{ margin: '16px 0', display: 'flex', justifyContent: 'center' }}>
-        <input
-          type="text"
-          placeholder="Pesquisar vendedor pelo nome..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          style={{ width: 320, padding: 8, borderRadius: 6, border: '1px solid #d1d5db', fontSize: 15 }}
-        />
-      </div>
-
       {deleteSuccessMessage && <div className="success-message">{deleteSuccessMessage}</div>}
-
-      <div className="sellers-list-container">
-        <div className="sellers-list-header">
+      <div className="clients-list-container">
+        <div className="clients-list-header">
           <div>Nome</div>
-          <div>Status</div> {/* Você precisará determinar de onde vem esse dado */}
+          <div>Email</div>
+          <div>Telefone</div>
           <div>CPF</div>
-          <div>Última Venda</div>
-          <div>Total Vendas</div>
+          <div>Cidade</div>
+          <div>Estado</div>
           <div>Ações</div>
         </div>
-        {filteredSellers.length > 0 ? (
-          filteredSellers.map((seller) => (
-            <div key={seller.id} className="sellers-list-item">
-              <div>
-                <Link to={`/seller/${seller.id}`} className="seller-name-link">
-                  {seller.name} {seller.lastName}
-                </Link>
-              </div>
-              <div>N/A</div> {/* Status não está diretamente na resposta */}
-              <div>{seller.cpf}</div>
-              <div>N/A</div>
-              <div>N/A</div>
+        {clients.length > 0 ? (
+          clients.map((client) => (
+            <div key={client.id} className="clients-list-item">
+              <div>{client.name}</div>
+              <div>{client.email}</div>
+              <div>{formatInput(client.phone, '(99) 99999-9999')}</div>
+              <div>{formatInput(client.cpf, '999.999.999-99')}</div>
+              <div>{client.address.city}</div>
+              <div>{client.address.state}</div>
               <div className="actions-cell">
-                <button className="icon-button delete" onClick={() => openDeleteConfirmation(seller)}><Trash2 size={16} /></button>
-                <button className="icon-button edit" onClick={() => openEditModal(seller.id)}><Pencil size={16} /></button>
+                <button className="icon-button delete" onClick={() => openDeleteConfirmation(client)}><Trash2 size={16} /></button>
+                <button className="icon-button edit" onClick={() => openEditModal(client.id)}><Pencil size={16} /></button>
                 <button className="icon-button more"><MoreVertical size={16} /></button>
               </div>
             </div>
           ))
         ) : (
-          <div className="no-sellers">Nenhum vendedor cadastrado.</div>
+          <div className="no-clients">Nenhum cliente cadastrado.</div>
         )}
       </div>
-
-      {isEditModalOpen && editingSeller && (
+      {isEditModalOpen && editingClient && (
         <div className="edit-modal-overlay">
           <div className="edit-modal">
             <div className="edit-modal-header">
-              <h2>Editar Vendedor</h2>
+              <h2>Editar Cliente</h2>
               <button className="close-button" onClick={closeEditModal}><X size={20} /></button>
             </div>
             <div className="edit-modal-body">
               {editError && <div className="error-message">{editError}</div>}
               <div className="form-group">
                 <label htmlFor="name">Nome:</label>
-                <input type="text" id="name" name="name" value={editingSeller.name} onChange={handleEditInputChange} maxLength={50} />
-              </div>
-              <div className="form-group">
-                <label htmlFor="lastName">Sobrenome:</label>
-                <input type="text" id="lastName" name="lastName" value={editingSeller.lastName} onChange={handleEditInputChange} maxLength={50} />
+                <input type="text" id="name" name="name" value={editingClient.name} onChange={handleEditInputChange} maxLength={100} />
               </div>
               <div className="form-group">
                 <label htmlFor="email">Email:</label>
-                <input type="email" id="email" name="email" value={editingSeller.email} onChange={handleEditInputChange} maxLength={100} />
+                <input type="email" id="email" name="email" value={editingClient.email} onChange={handleEditInputChange} maxLength={100} />
               </div>
               <div className="form-group">
                 <label htmlFor="cpf">CPF:</label>
-                <input type="text" id="cpf" name="cpf" value={formatInput(editingSeller.cpf, '999.999.999-99')} onChange={handleEditInputChange} maxLength={14} />
+                <input type="text" id="cpf" name="cpf" value={formatInput(editingClient.cpf, '999.999.999-99')} onChange={handleEditInputChange} maxLength={14} />
               </div>
               <div className="form-group">
                 <label htmlFor="phone">Telefone:</label>
-                <input type="text" id="phone" name="phone" value={formatInput(editingSeller.phone, '(99) 99999-9999')} onChange={handleEditInputChange} maxLength={16} />
-              </div>
-              <div className="form-group">
-                <label htmlFor="birthDate">Data de Nascimento:</label>
-                <input type="date" id="birthDate" name="birthDate" value={editingSeller.birthDate ? editingSeller.birthDate.split('T')[0] : ''} onChange={handleEditInputChange} />
+                <input type="text" id="phone" name="phone" value={formatInput(editingClient.phone, '(99) 99999-9999')} onChange={handleEditInputChange} maxLength={16} />
               </div>
               <div className="form-group address-group">
                 <label>Endereço:</label>
@@ -339,7 +276,7 @@ function ReadSellersPage() {
                   type="text"
                   name="address.zipCode"
                   placeholder="CEP (99999-999)"
-                  value={formatInput(editingSeller.address.zipCode, '99999-999')}
+                  value={formatInput(editingClient.address.zipCode, '99999-999')}
                   onChange={handleEditInputChange}
                   maxLength={9}
                 />
@@ -347,7 +284,7 @@ function ReadSellersPage() {
                   type="text"
                   name="address.state"
                   placeholder="Estado (sigla)"
-                  value={editingSeller.address.state}
+                  value={editingClient.address.state}
                   onChange={handleEditInputChange}
                   maxLength={2}
                 />
@@ -355,7 +292,7 @@ function ReadSellersPage() {
                   type="text"
                   name="address.street"
                   placeholder="Rua"
-                  value={editingSeller.address.street}
+                  value={editingClient.address.street}
                   onChange={handleEditInputChange}
                   maxLength={100}
                 />
@@ -363,7 +300,7 @@ function ReadSellersPage() {
                   type="text"
                   name="address.number"
                   placeholder="Número"
-                  value={editingSeller.address.number}
+                  value={editingClient.address.number}
                   onChange={handleEditInputChange}
                   maxLength={10}
                 />
@@ -371,7 +308,7 @@ function ReadSellersPage() {
                   type="text"
                   name="address.city"
                   placeholder="Cidade"
-                  value={editingSeller.address.city}
+                  value={editingClient.address.city}
                   onChange={handleEditInputChange}
                   maxLength={50}
                 />
@@ -384,24 +321,20 @@ function ReadSellersPage() {
           </div>
         </div>
       )}
-
-      {isDeleteConfirmationOpen && sellerToDelete && (
+      {isDeleteConfirmationOpen && clientToDelete && (
         <div className="delete-confirmation-overlay">
           <div className="delete-confirmation-modal">
-            <h2>Você realmente deseja excluir este vendedor?</h2>
-            <p><strong>Nome:</strong> {sellerToDelete.name} {sellerToDelete.lastName}</p>
-            <p><strong>Status:</strong> N/A</p>
-            <p><strong>CPF:</strong> {sellerToDelete.cpf}</p>
-            <p><strong>Email:</strong> {sellerToDelete.email}</p>
-            <p><strong>Telefone:</strong> {sellerToDelete.phone}</p>
+            <h2>Você realmente deseja excluir este cliente?</h2>
+            <p><strong>Nome:</strong> {clientToDelete.name}</p>
+            <p><strong>Email:</strong> {clientToDelete.email}</p>
+            <p><strong>CPF:</strong> {clientToDelete.cpf}</p>
             <div className="delete-confirmation-buttons">
               <button className="cancel-button" onClick={closeDeleteConfirmation}>Cancelar</button>
-              <button className="delete-button" onClick={handleDeleteSeller}>Excluir</button>
+              <button className="delete-button" onClick={handleDeleteClient}>Excluir</button>
             </div>
           </div>
         </div>
       )}
-
       <div className="pagination">
         <button onClick={() => setPage(1)} disabled={page === 1}>«</button>
         <button onClick={() => setPage(p => Math.max(p - 1, 1))} disabled={page === 1}>‹</button>
@@ -416,4 +349,4 @@ function ReadSellersPage() {
   );
 }
 
-export default ReadSellersPage;
+export default ReadClientsPage; 
