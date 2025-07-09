@@ -208,12 +208,26 @@ export default function ReadSalesPage() {
         if (response.status === 204 || response.status === 200) {
           const updatedSales = sales.filter(s => s.id !== saleToDelete.id);
           setSales(updatedSales);
-          setDeleteSuccessMessage('Venda excluída com sucesso!');
-          setTimeout(() => setDeleteSuccessMessage(''), 3000);
+          
+          // Usar a mensagem detalhada do backend se disponível
+          let successMessage = 'Venda excluída com sucesso!';
+          
+          if (response.data?.alert) {
+            successMessage = `Venda excluída com sucesso! ${response.data.alert}`;
+          } else {
+            // Fallback para cálculo manual se o backend não retornar informações detalhadas
+            const totalItems = saleToDelete.items.reduce((sum, item) => sum + item.quantity, 0);
+            successMessage = `Venda excluída com sucesso! ${totalItems} produto(s) retornaram ao estoque.`;
+          }
+          
+          showSuccess(successMessage);
+          setDeleteSuccessMessage(successMessage);
+          setTimeout(() => setDeleteSuccessMessage(''), 5000);
         } else {
           showError('Erro ao excluir venda.');
         }
       } catch (error: any) {
+        console.error('Erro ao excluir venda:', error);
         showError('Erro ao excluir venda.');
       } finally {
         closeDeleteConfirmation();
@@ -466,12 +480,26 @@ export default function ReadSalesPage() {
             <p><strong>Cliente:</strong> {saleToDelete.client.name}</p>
             <p><strong>Vendedor:</strong> {saleToDelete.seller.name}</p>
             <p><strong>Total:</strong> R$ {saleToDelete.total.toFixed(2)}</p>
+            
+            <div className="stock-return-info">
+              <h3>⚠️ Produtos que voltarão ao estoque:</h3>
+              <div className="products-list">
+                {saleToDelete.items.map((item, index) => (
+                  <div key={index} className="product-item">
+                    <span className="product-name">• {item.product.name}</span>
+                    <span className="product-details"> ({item.product.size} - {item.product.color})</span>
+                    <span className="quantity-return"> - <strong>{item.quantity} unidade(s)</strong> voltarão ao estoque</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
             <div className="delete-confirmation-buttons">
               <button className="cancel-button" onClick={closeDeleteConfirmation}>
                 Cancelar
               </button>
               <button className="delete-button" onClick={handleDeleteSale}>
-                Excluir
+                Excluir e Retornar ao Estoque
               </button>
             </div>
           </div>
