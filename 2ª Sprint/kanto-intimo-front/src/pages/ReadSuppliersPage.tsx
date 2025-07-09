@@ -5,6 +5,7 @@ import Navbar from "../components/ui/navbar";
 import { Trash2, Pencil, MoreVertical, X, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../lib/axiosConfig';
+import { useNotification } from '../components/ui/notification';
 
 interface Address {
   street: string;
@@ -58,6 +59,7 @@ const formatInput = (value: string, pattern: string) => {
 };
 
 function ReadSuppliersPage() {
+  const { showSuccess, showError, NotificationContainer } = useNotification();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
@@ -98,7 +100,7 @@ function ReadSuppliersPage() {
       setEditError('');
     } catch (error: any) {
       console.error('Erro ao carregar dados do fornecedor para edição:', error);
-      alert('Erro ao carregar dados do fornecedor para edição.');
+      showError('Erro ao carregar dados do fornecedor para edição.');
     }
   };
 
@@ -246,7 +248,7 @@ function ReadSuppliersPage() {
           );
           setSuppliers(updatedSuppliers);
           closeEditModal();
-          alert('Fornecedor atualizado com sucesso!');
+          showSuccess('Fornecedor atualizado com sucesso!');
         } else {
           console.error('Erro ao atualizar fornecedor:', response.data);
           setEditError(response.data?.message || 'Erro ao atualizar fornecedor.');
@@ -313,7 +315,7 @@ function ReadSuppliersPage() {
             successMessage = 'Fornecedor excluído e produtos desassociados com sucesso!';
             break;
           default:
-            alert('Por favor, selecione uma opção.');
+            showError('Por favor, selecione uma opção.');
             return;
         }
 
@@ -336,12 +338,12 @@ function ReadSuppliersPage() {
           setTimeout(() => setDeleteSuccessMessage(''), 3000);
         } else {
           console.error('Erro ao processar operação:', response.data);
-          alert(response.data?.message || 'Erro ao processar operação.');
+          showError(response.data?.message || 'Erro ao processar operação.');
         }
       } catch (error: any) {
         console.error('Erro ao processar operação:', error);
         const errorMessage = error.response?.data?.message || error.message || 'Erro ao processar operação.';
-        alert(errorMessage);
+        showError(errorMessage);
       } finally {
         closeDeleteConfirmation();
       }
@@ -365,12 +367,12 @@ function ReadSuppliersPage() {
         setTimeout(() => setDeleteSuccessMessage(''), 3000);
       } else {
         console.error('Erro ao reabilitar fornecedor:', response.data);
-        alert('Erro ao reabilitar fornecedor.');
+        showError('Erro ao reabilitar fornecedor.');
       }
     } catch (error: any) {
       console.error('Erro ao reabilitar fornecedor:', error);
       const errorMessage = error.response?.data?.message || error.message || 'Erro ao reabilitar fornecedor.';
-      alert(errorMessage);
+      showError(errorMessage);
     }
   };
 
@@ -715,8 +717,9 @@ function ReadSuppliersPage() {
         </span>
         <button onClick={() => setPage(p => Math.min(p + 1, totalPages))} disabled={page === totalPages}>›</button>
         <button onClick={() => setPage(totalPages)} disabled={page === totalPages}>»</button>
-        <button className="update-button" onClick={() => setPage(page)}>Atualizar</button>
+        <button className="update-button" onClick={() => window.location.reload()}>Atualizar</button>
       </div>
+      <NotificationContainer />
     </div>
   );
 }

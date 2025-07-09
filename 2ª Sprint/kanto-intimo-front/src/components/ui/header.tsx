@@ -1,6 +1,4 @@
-import { Input } from "@/components/ui/input";
 import {
-  Search,
   UserCircle,
   Bell,
   Moon,
@@ -9,7 +7,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import '../../styles/HomePage.css';
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 const Header = () => {
   const [darkMode, setDarkMode] = useState<boolean>(() => {
@@ -30,10 +28,6 @@ const Header = () => {
   return (
     <header className="homepage-header">
       <h1 className="homepage-title">ERP Kanto Intimo</h1>
-      <div className="homepage-search">
-        <Input placeholder="Pesquisa" className="search-input" />
-        <Search className="search-icon" />
-      </div>
       <div className="homepage-icons">
         <HelpCircle className="icon" />
         <Cog className="icon" />

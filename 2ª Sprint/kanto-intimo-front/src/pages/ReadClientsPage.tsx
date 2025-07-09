@@ -362,7 +362,7 @@ function ReadClientsPage() {
         </span>
         <button onClick={() => setPage(p => Math.min(p + 1, totalPages))} disabled={page === totalPages}>›</button>
         <button onClick={() => setPage(totalPages)} disabled={page === totalPages}>»</button>
-        <button className="update-button" onClick={() => setPage(page)}>Atualizar</button>
+        <button className="update-button" onClick={() => window.location.reload()}>Atualizar</button>
       </div>
     </div>
   );
