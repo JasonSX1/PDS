@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsArray,
   ValidateNested,
+  IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateSupplierDto, CreateAddressDto } from './create-supplier.dto'; // Importe CreateAddressDto
@@ -40,4 +41,8 @@ export class UpdateSupplierDto {
   @ValidateNested()
   @Type(() => UpdateAddressDto) // Use UpdateAddressDto para a transformação
   address?: UpdateAddressDto;
+
+  @IsOptional()
+  @IsEnum(['ATIVO', 'INATIVO'])
+  status?: 'ATIVO' | 'INATIVO';
 }

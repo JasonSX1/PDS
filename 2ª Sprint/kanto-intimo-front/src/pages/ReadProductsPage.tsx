@@ -16,7 +16,8 @@ interface Product {
   size: string;
   color: string;
   quantity: number;
-  supplier: { id: number; name: string };
+  supplier: { id: number; name: string } | null;
+  supplierId?: number | null;
   // Removido: category e promotion
 }
 
@@ -43,6 +44,7 @@ export default function ReadProductsPage() {
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState<boolean>(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [search, setSearch] = useState<string>("");
+  const [suppliers, setSuppliers] = useState<{id: number; name: string; status?: string}[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -57,6 +59,11 @@ export default function ReadProductsPage() {
     };
     fetchData();
   }, [page]);
+
+  useEffect(() => {
+    // Buscar suppliers para edição
+    api.get("/supplier/pages").then(res => setSuppliers(res.data.results || []));
+  }, []);
 
   // Filtro de produtos pelo nome
   const filteredProducts = products.filter(product =>
@@ -99,7 +106,7 @@ export default function ReadProductsPage() {
           size: editingProduct.size,
           color: editingProduct.color,
           quantity: Number(editingProduct.quantity),
-          supplierId: editingProduct.supplier.id,
+          supplierId: editingProduct.supplierId || editingProduct.supplier?.id || null,
           // Removido: categoryId e promotionId
         };
         const response = await api.patch(`/product/${editingProduct.id}`, payload);
@@ -186,7 +193,7 @@ export default function ReadProductsPage() {
               <div>{product.size}</div>
               <div>{product.color}</div>
               <div>{product.quantity}</div>
-              <div>{product.supplier?.name}</div>
+              <div>{product.supplier?.name || "Sem fornecedor"}</div>
               <div className="actions-cell">
                 <button className="icon-button delete" onClick={() => openDeleteConfirmation(product)}><Trash2 size={16} /></button>
                 <button className="icon-button edit" onClick={() => openEditModal(product.id)}><Pencil size={16} /></button>
@@ -232,6 +239,20 @@ export default function ReadProductsPage() {
               <div className="form-group">
                 <label htmlFor="quantity">Quantidade:</label>
                 <input type="number" id="quantity" name="quantity" value={editingProduct.quantity} onChange={handleEditInputChange} min="0" />
+              </div>
+              <div className="form-group">
+                <label htmlFor="supplierId">Fornecedor:</label>
+                <select 
+                  id="supplierId" 
+                  name="supplierId" 
+                  value={editingProduct.supplierId || editingProduct.supplier?.id || ""} 
+                  onChange={(e) => setEditingProduct(prev => prev ? { ...prev, supplierId: Number(e.target.value) || null } : prev)}
+                >
+                  <option value="" disabled>Selecione um fornecedor</option>
+                  {suppliers.filter(supplier => supplier.status !== 'INATIVO').map(supplier => (
+                    <option key={supplier.id} value={supplier.id}>{supplier.name}</option>
+                  ))}
+                </select>
               </div>
             </div>
             <div className="edit-modal-footer">

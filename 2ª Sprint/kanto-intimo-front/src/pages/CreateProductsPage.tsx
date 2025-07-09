@@ -5,7 +5,7 @@ import Header from "../components/ui/header";
 import Navbar from "../components/ui/navbar";
 import api from "../lib/axiosConfig";
 
-interface Supplier { id: number; name: string; }
+interface Supplier { id: number; name: string; status?: string; }
 interface SimpleOption { value: string; label: string; }
 
 const INITIAL_SIZE_OPTIONS: SimpleOption[] = ["P", "M", "G", "GG", "XG"].map(s => ({ value: s, label: s }));
@@ -181,7 +181,7 @@ export default function CreateProductsPage() {
             required
           >
             <option value="">Selecione o Fornecedor</option>
-            {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+            {suppliers.filter(s => s.status !== 'INATIVO').map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
         </div>
         {error && <div style={{ color: "red", marginTop: 12 }}>{error}</div>}

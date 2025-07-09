@@ -195,7 +195,16 @@ function ReadSellersPage() {
 
           const updatedSellers = sellers.map(seller =>
             seller.id === editingSeller.id
-              ? { ...seller, name: updatedName, lastName: updatedLastName }
+              ? { 
+                  ...seller, 
+                  name: updatedName, 
+                  lastName: updatedLastName,
+                  email: editingSeller.email,
+                  phone: editingSeller.phone,
+                  cpf: editingSeller.cpf,
+                  birthDate: editingSeller.birthDate,
+                  address: editingSeller.address
+                }
               : seller
           );
           setSellers(updatedSellers);

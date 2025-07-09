@@ -21,6 +21,7 @@ interface Supplier {
   phones: string[];
   emails: string[];
   address: Address;
+  status?: string;
 }
 
 interface ApiResponse {
@@ -74,9 +75,11 @@ function ReadSuppliersPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log('Buscando fornecedores...');
         const response = await api.get(`/supplier/pages`);
         const data: ApiResponse = response.data;
         console.log("Dados da API:", data);
+        console.log("Fornecedores com status:", data.results.map(s => ({ id: s.id, name: s.name, status: s.status })));
         setSuppliers(data.results);
         setTotalPages(data.pagination.lastPage + 1);
       } catch (error: any) {
@@ -127,12 +130,13 @@ function ReadSuppliersPage() {
     }
 
     setEditingSupplier(prev => {
+      if (!prev) return prev;
       if (name.startsWith('address.')) {
         const addressPart = name.split('.')[1];
         return {
           ...prev,
           address: {
-            ...prev!.address,
+            ...prev.address,
             [addressPart]: formattedValue,
           },
         };
@@ -344,6 +348,32 @@ function ReadSuppliersPage() {
     }
   };
 
+  const handleReactivateSupplier = async (supplier: Supplier) => {
+    try {
+      console.log('Tentando reabilitar fornecedor:', supplier.id);
+      const response = await api.patch(`/supplier/${supplier.id}/enable`);
+      console.log('Resposta do servidor:', response);
+      
+      if (response.status === 200 || response.status === 204) {
+        const updatedSuppliers = suppliers.map(s => 
+          s.id === supplier.id 
+            ? { ...s, status: 'ATIVO' } 
+            : s
+        );
+        setSuppliers(updatedSuppliers);
+        setDeleteSuccessMessage('Fornecedor reabilitado com sucesso!');
+        setTimeout(() => setDeleteSuccessMessage(''), 3000);
+      } else {
+        console.error('Erro ao reabilitar fornecedor:', response.data);
+        alert('Erro ao reabilitar fornecedor.');
+      }
+    } catch (error: any) {
+      console.error('Erro ao reabilitar fornecedor:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Erro ao reabilitar fornecedor.';
+      alert(errorMessage);
+    }
+  };
+
   // Filtro de fornecedores pelo nome ou CNPJ
   const filteredSuppliers = suppliers.filter(supplier =>
     supplier.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -377,6 +407,7 @@ function ReadSuppliersPage() {
         <div className="suppliers-list-header">
           <div>Nome</div>
           <div>CNPJ</div>
+          <div>Status</div>
           <div>Telefones</div>
           <div>E-mails</div>
           <div>Ações</div>
@@ -390,11 +421,31 @@ function ReadSuppliersPage() {
                 </Link>
               </div>
               <div>{formatInput(supplier.cnpj, '99.999.999/9999-99')}</div>
+              <div>
+                <span className={`status-badge ${supplier.status === 'INATIVO' ? 'status-inactive' : 'status-active'}`}>
+                  {supplier.status === 'INATIVO' ? 'Desabilitado' : 'Habilitado'}
+                </span>
+              </div>
               <div>{supplier.phones.map(phone => formatInput(phone, '(99) 99999-9999')).join(', ')}</div>
               <div>{supplier.emails.join(', ') || 'N/A'}</div>
               <div className="actions-cell">
-                <button className="icon-button delete" onClick={() => openDeleteConfirmation(supplier)}><Trash2 size={16} /></button>
-                <button className="icon-button edit" onClick={() => openEditModal(supplier.id)}><Pencil size={16} /></button>
+                {supplier.status === 'INATIVO' ? (
+                  <>
+                    <button 
+                      className="icon-button reactivate" 
+                      onClick={() => handleReactivateSupplier(supplier)}
+                      title="Reabilitar fornecedor"
+                    >
+                      <Plus size={16} />
+                    </button>
+                    <button className="icon-button edit" onClick={() => openEditModal(supplier.id)}><Pencil size={16} /></button>
+                  </>
+                ) : (
+                  <>
+                    <button className="icon-button delete" onClick={() => openDeleteConfirmation(supplier)}><Trash2 size={16} /></button>
+                    <button className="icon-button edit" onClick={() => openEditModal(supplier.id)}><Pencil size={16} /></button>
+                  </>
+                )}
                 <button className="icon-button more"><MoreVertical size={16} /></button>
               </div>
             </div>

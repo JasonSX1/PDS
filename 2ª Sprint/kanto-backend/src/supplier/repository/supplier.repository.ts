@@ -87,6 +87,7 @@ export class SupplierRepository {
         cnpj: dto.cnpj,
         phones: dto.phones,
         emails: dto.emails,
+        status: dto.status,
         address: dto.address ? { update: dto.address } : undefined, // Atualiza endereço se fornecido
       },
       include: {

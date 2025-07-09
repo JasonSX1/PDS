@@ -69,4 +69,9 @@ export class SupplierController {
   async disable(@Param('id') id: string) {
     return await this.supplierService.disable(Number(id));
   }
+
+  @Patch(':id/enable')
+  async enable(@Param('id') id: string) {
+    return await this.supplierService.enable(Number(id));
+  }
 }

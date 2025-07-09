@@ -128,13 +128,7 @@ export class SupplierService {
     }
 
     try {
-      return await this.prisma.supplier.update({
-        where: { id },
-        data: { status: 'INATIVO' },
-        include: {
-          address: true
-        }
-      });
+      return await this.repository.update(id, { status: 'INATIVO' });
     } catch (error) {
       console.error('Erro ao desabilitar fornecedor:', error);
       throw new InternalServerErrorException('Erro ao desabilitar o fornecedor.');
@@ -238,6 +232,20 @@ export class SupplierService {
       }
 
       throw new InternalServerErrorException('Erro ao excluir o fornecedor.');
+    }
+  }
+
+  async enable(id: number) {
+    const existingSupplier = await this.repository.findById(id);
+    if (!existingSupplier) {
+      throw new NotFoundException('Fornecedor não encontrado.');
+    }
+
+    try {
+      return await this.repository.update(id, { status: 'ATIVO' });
+    } catch (error) {
+      console.error('Erro ao reabilitar fornecedor:', error);
+      throw new InternalServerErrorException('Erro ao reabilitar o fornecedor.');
     }
   }
 }
