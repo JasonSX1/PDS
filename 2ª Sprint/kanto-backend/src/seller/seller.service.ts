@@ -123,4 +123,44 @@ export class SellerService {
       throw new InternalServerErrorException('Erro ao excluir o vendedor.');
     }
   }
+
+  async getSellerStats(id: number) {
+    try {
+      // Verificar se o vendedor existe
+      const seller = await this.repository.findById(id);
+      if (!seller) {
+        throw new NotFoundException('Vendedor não encontrado.');
+      }
+
+      // Buscar estatísticas de vendas
+      const salesData = await this.prisma.sale.findMany({
+        where: { sellerId: id },
+        orderBy: { date: 'desc' },
+        select: {
+          id: true,
+          date: true,
+          total: true
+        }
+      });
+
+      const totalSales = salesData.length;
+      const lastSaleDate = salesData.length > 0 ? salesData[0].date : null;
+      const totalRevenue = salesData.reduce((sum, sale) => sum + sale.total, 0);
+
+      return {
+        sellerId: id,
+        totalSales,
+        lastSaleDate,
+        totalRevenue
+      };
+    } catch (error) {
+      console.error('Erro ao buscar estatísticas do vendedor:', error);
+      
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      
+      throw new InternalServerErrorException('Erro ao buscar estatísticas do vendedor.');
+    }
+  }
 }

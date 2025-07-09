@@ -153,6 +153,16 @@ export default function CreateSalesPage() {
       const response = await api.post("/sale", payload);
       if (response.status !== 201) throw new Error(response.data.message || "Erro ao cadastrar venda");
       
+      // Disparar evento para atualizar estatísticas de vendedores
+      const updateEvent = new CustomEvent('saleCreated', {
+        detail: { sellerId: formData.sellerId }
+      });
+      window.dispatchEvent(updateEvent);
+      
+      // Também usar localStorage como fallback
+      localStorage.setItem('lastSaleUpdate', Date.now().toString());
+      localStorage.setItem('lastSaleSellerId', formData.sellerId);
+      
       showSuccess("Venda cadastrada com sucesso!");
       setFormData({ 
         clientId: "", 

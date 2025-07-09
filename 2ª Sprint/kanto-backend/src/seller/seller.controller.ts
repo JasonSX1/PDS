@@ -49,4 +49,9 @@ export class SellerController {
   async remove(@Param('id') id: string) {
     return await this.sellerService.remove(Number(id));
   }
+
+  @Get(':id/stats')
+  async getSellerStats(@Param('id') id: string) {
+    return await this.sellerService.getSellerStats(Number(id));
+  }
 }

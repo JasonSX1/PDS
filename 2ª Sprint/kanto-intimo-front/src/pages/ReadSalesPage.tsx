@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import '../styles/ReadSalesPage.css';
 import Header from "../components/ui/header";
 import Navbar from "../components/ui/navbar";
-import { Trash2, Pencil, X, Eye } from 'lucide-react';
+import { Trash2, Pencil, X, Eye, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../lib/axiosConfig';
 import { useNotification } from '../components/ui/notification';
@@ -154,6 +154,54 @@ export default function ReadSalesPage() {
     setEditingSale(prev => prev ? { ...prev, [name]: value } : prev);
   };
 
+  const addItemToSale = () => {
+    if (editingSale) {
+      const newItem: SaleItem = {
+        id: 0, // Novo item terá ID 0 temporariamente
+        productId: 0,
+        quantity: 1,
+        unitPrice: 0,
+        product: {
+          id: 0,
+          name: '',
+          price: 0,
+          size: '',
+          color: ''
+        }
+      };
+      
+      setEditingSale(prev => prev ? {
+        ...prev,
+        items: [...prev.items, newItem]
+      } : prev);
+    }
+  };
+
+  const removeItemFromSale = (index: number) => {
+    if (editingSale && editingSale.items.length > 1) {
+      const itemToRemove = editingSale.items[index];
+      const productName = products.find(p => p.id === itemToRemove.productId)?.name || 'Produto';
+      
+      // Confirmação com alerta sobre retorno ao estoque
+      const confirmRemoval = window.confirm(
+        `Tem certeza que deseja remover este produto da venda?\n\n` +
+        `${productName}\n` +
+        `Quantidade: ${itemToRemove.quantity} unidade(s)\n\n` +
+        `⚠️ Esta quantidade será devolvida ao estoque quando a venda for salva.`
+      );
+      
+      if (confirmRemoval) {
+        const newItems = editingSale.items.filter((_, i) => i !== index);
+        setEditingSale(prev => prev ? {
+          ...prev,
+          items: newItems
+        } : prev);
+        
+        showSuccess(`Produto removido! ${itemToRemove.quantity} unidade(s) de ${productName} serão devolvidas ao estoque.`);
+      }
+    }
+  };
+
   const handleSaveEdit = async () => {
     if (editingSale) {
       setEditError('');
@@ -161,11 +209,19 @@ export default function ReadSalesPage() {
         setEditError("Preencha todos os campos obrigatórios");
         return;
       }
+
+      // Validar se todos os itens têm produto selecionado
+      const invalidItems = editingSale.items.filter(item => !item.productId || item.quantity <= 0 || item.unitPrice <= 0);
+      if (invalidItems.length > 0) {
+        setEditError("Todos os produtos devem ter produto selecionado, quantidade e preço válidos");
+        return;
+      }
+
       try {
         const payload = {
           clientId: Number(editingSale.clientId),
           sellerId: Number(editingSale.sellerId),
-          total: editingSale.total,
+          total: editingSale.items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0),
           date: editingSale.date,
           observations: editingSale.observations,
           items: editingSale.items.map(item => ({
@@ -180,6 +236,17 @@ export default function ReadSalesPage() {
             sale.id === editingSale.id ? { ...sale, ...editingSale } : sale
           );
           setSales(updatedSales);
+          
+          // Disparar evento para atualizar estatísticas de vendedores
+          const updateEvent = new CustomEvent('saleUpdated', {
+            detail: { sellerId: editingSale.sellerId }
+          });
+          window.dispatchEvent(updateEvent);
+          
+          // Também usar localStorage como fallback
+          localStorage.setItem('lastSaleUpdate', Date.now().toString());
+          localStorage.setItem('lastSaleSellerId', editingSale.sellerId.toString());
+          
           closeEditModal();
           showSuccess('Venda atualizada com sucesso!');
         } else {
@@ -208,6 +275,16 @@ export default function ReadSalesPage() {
         if (response.status === 204 || response.status === 200) {
           const updatedSales = sales.filter(s => s.id !== saleToDelete.id);
           setSales(updatedSales);
+          
+          // Disparar evento para atualizar estatísticas de vendedores
+          const updateEvent = new CustomEvent('saleDeleted', {
+            detail: { sellerId: saleToDelete.sellerId }
+          });
+          window.dispatchEvent(updateEvent);
+          
+          // Também usar localStorage como fallback
+          localStorage.setItem('lastSaleUpdate', Date.now().toString());
+          localStorage.setItem('lastSaleSellerId', saleToDelete.sellerId.toString());
           
           // Usar a mensagem detalhada do backend se disponível
           let successMessage = 'Venda excluída com sucesso!';
@@ -312,20 +389,25 @@ export default function ReadSalesPage() {
             <div className="details-modal-body">
               <div className="sale-info">
                 <div className="info-row">
-                  <strong>Data:</strong> {formatDate(selectedSale.date)}
+                  <strong>Data da Venda:</strong>
+                  <span>{formatDate(selectedSale.date)}</span>
                 </div>
                 <div className="info-row">
-                  <strong>Cliente:</strong> {selectedSale.client.name} ({selectedSale.client.email})
+                  <strong>Cliente:</strong>
+                  <span>{selectedSale.client.name} ({selectedSale.client.email})</span>
                 </div>
                 <div className="info-row">
-                  <strong>Vendedor:</strong> {selectedSale.seller.name} ({selectedSale.seller.email})
+                  <strong>Vendedor:</strong>
+                  <span>{selectedSale.seller.name} ({selectedSale.seller.email})</span>
                 </div>
                 <div className="info-row">
-                  <strong>Total:</strong> R$ {selectedSale.total.toFixed(2)}
+                  <strong>Valor Total:</strong>
+                  <span>R$ {selectedSale.total.toFixed(2)}</span>
                 </div>
                 {selectedSale.observations && (
                   <div className="info-row">
-                    <strong>Observações:</strong> {selectedSale.observations}
+                    <strong>Observações:</strong>
+                    <span>{selectedSale.observations}</span>
                   </div>
                 )}
               </div>
@@ -403,58 +485,111 @@ export default function ReadSalesPage() {
               />
 
               <div className="items-section">
-                <h3>Produtos da Venda</h3>
-                {editingSale.items.map((item, index) => (
-                  <div key={index} className="item-row">
-                    <select
-                      value={item.productId}
-                      onChange={(e) => {
-                        const newItems = [...editingSale.items];
-                        newItems[index] = { ...newItems[index], productId: Number(e.target.value) };
-                        setEditingSale(prev => prev ? { ...prev, items: newItems } : prev);
-                      }}
-                      required
-                    >
-                      <option value={0}>Selecione o Produto</option>
-                      {products.map(p => (
-                        <option key={p.id} value={p.id}>
-                          {p.name} - {p.size} - {p.color} - R$ {p.price.toFixed(2)}
-                        </option>
-                      ))}
-                    </select>
-                    
-                    <input
-                      type="number"
-                      placeholder="Quantidade"
-                      value={item.quantity}
-                      onChange={(e) => {
-                        const newItems = [...editingSale.items];
-                        newItems[index] = { ...newItems[index], quantity: Number(e.target.value) };
-                        setEditingSale(prev => prev ? { ...prev, items: newItems } : prev);
-                      }}
-                      min="1"
-                      required
-                    />
-                    
-                    <input
-                      type="number"
-                      placeholder="Preço Unitário"
-                      value={item.unitPrice}
-                      onChange={(e) => {
-                        const newItems = [...editingSale.items];
-                        newItems[index] = { ...newItems[index], unitPrice: Number(e.target.value) };
-                        setEditingSale(prev => prev ? { ...prev, items: newItems } : prev);
-                      }}
-                      min="0"
-                      step="0.01"
-                      required
-                    />
-                    
-                    <span className="item-total">
-                      R$ {(item.quantity * item.unitPrice).toFixed(2)}
-                    </span>
-                  </div>
-                ))}
+                <div className="items-header">
+                  <h3>Produtos da Venda</h3>
+                  <span className="items-count">({editingSale.items.length} produto{editingSale.items.length !== 1 ? 's' : ''})</span>
+                </div>
+                
+                <div className="items-list">
+                  {editingSale.items.map((item, index) => (
+                    <div key={index} className="item-edit-card">
+                      <div className="item-edit-header">
+                        <span className="item-number">#{index + 1}</span>
+                        {editingSale.items.length > 1 && (
+                          <button
+                            type="button"
+                            className="remove-item-button"
+                            onClick={() => removeItemFromSale(index)}
+                            title="Remover produto da venda"
+                          >
+                            <Trash2 size={16} />
+                            <span>Remover</span>
+                          </button>
+                        )}
+                      </div>
+                      
+                      <div className="item-edit-content">
+                        <div className="item-field-group">
+                          <label>Produto:</label>
+                          <select
+                            value={item.productId}
+                            onChange={(e) => {
+                              const newItems = [...editingSale.items];
+                              const selectedProduct = products.find(p => p.id === Number(e.target.value));
+                              newItems[index] = { 
+                                ...newItems[index], 
+                                productId: Number(e.target.value),
+                                unitPrice: selectedProduct ? selectedProduct.price : newItems[index].unitPrice
+                              };
+                              setEditingSale(prev => prev ? { ...prev, items: newItems } : prev);
+                            }}
+                            required
+                            className="product-select"
+                          >
+                            <option value={0}>Selecione o Produto</option>
+                            {products.map(p => (
+                              <option key={p.id} value={p.id}>
+                                {p.name} - {p.size} - {p.color} - R$ {p.price.toFixed(2)}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        
+                        <div className="item-details-row">
+                          <div className="item-field-group">
+                            <label>Quantidade:</label>
+                            <input
+                              type="number"
+                              placeholder="Qtd"
+                              value={item.quantity}
+                              onChange={(e) => {
+                                const newItems = [...editingSale.items];
+                                newItems[index] = { ...newItems[index], quantity: Number(e.target.value) };
+                                setEditingSale(prev => prev ? { ...prev, items: newItems } : prev);
+                              }}
+                              min="1"
+                              required
+                              className="quantity-input"
+                            />
+                          </div>
+                          
+                          <div className="item-field-group">
+                            <label>Preço Unitário:</label>
+                            <input
+                              type="number"
+                              placeholder="R$ 0,00"
+                              value={item.unitPrice}
+                              onChange={(e) => {
+                                const newItems = [...editingSale.items];
+                                newItems[index] = { ...newItems[index], unitPrice: Number(e.target.value) };
+                                setEditingSale(prev => prev ? { ...prev, items: newItems } : prev);
+                              }}
+                              min="0"
+                              step="0.01"
+                              required
+                              className="price-input"
+                            />
+                          </div>
+                          
+                          <div className="item-field-group">
+                            <label>Subtotal:</label>
+                            <div className="item-subtotal">
+                              R$ {(item.quantity * item.unitPrice).toFixed(2)}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <button
+                  type="button"
+                  className="add-item-button"
+                  onClick={addItemToSale}
+                >
+                  <Plus size={16} /> Adicionar Produto
+                </button>
               </div>
 
               <div className="total-section">

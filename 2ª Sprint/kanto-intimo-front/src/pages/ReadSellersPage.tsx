@@ -24,6 +24,9 @@ interface Seller {
   cpf: string;
   birthDate: string | null;
   address: Address;
+  status?: string;
+  lastSaleDate?: string | null;
+  totalSales?: number;
 }
 
 interface ApiResponse {
@@ -71,25 +74,142 @@ function ReadSellersPage() {
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState<boolean>(false);
   const [sellerToDelete, setSellerToDelete] = useState<Seller | null>(null);
   const [search, setSearch] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+
+  const fetchSellerStats = async (seller: any) => {
+    try {
+      // Buscar estatísticas de vendas do vendedor
+      const statsResponse = await api.get(`/seller/${seller.id}/stats`);
+      const stats = statsResponse.data;
+      
+      const [name, ...lastNameParts] = seller.name.split(' ');
+      return { 
+        ...seller, 
+        name, 
+        lastName: lastNameParts.join(' '),
+        status: 'ATIVO', // Assumindo que todos os vendedores são ativos por padrão
+        lastSaleDate: stats.lastSaleDate || null,
+        totalSales: stats.totalSales || 0
+      };
+    } catch (error) {
+      // Se não conseguir buscar stats, usar valores padrão
+      const [name, ...lastNameParts] = seller.name.split(' ');
+      return { 
+        ...seller, 
+        name, 
+        lastName: lastNameParts.join(' '),
+        status: 'ATIVO',
+        lastSaleDate: null,
+        totalSales: 0
+      };
+    }
+  };
+
+  const fetchSellersData = async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.get(`/seller/pages`);
+      const data: ApiResponse = response.data;
+      console.log("Dados da API:", data);
+      
+      // Buscar informações de vendas para cada vendedor
+      const sellersWithStats = await Promise.all(
+        data.results.map(fetchSellerStats)
+      );
+      
+      setSellers(sellersWithStats);
+      setTotalPages(data.pagination.lastPage + 1);
+      setLastUpdate(new Date());
+    } catch (error: any) {
+      console.error('Erro ao buscar vendedores:', error);
+      showError('Erro ao carregar dados dos vendedores.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const refreshSellersData = () => {
+    fetchSellersData();
+    showSuccess('Dados dos vendedores atualizados!');
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await api.get(`/seller/pages`);
-        const data: ApiResponse = response.data;
-        console.log("Dados da API:", data);
-        const formattedSellers = data.results.map(seller => {
-          const [name, ...lastNameParts] = seller.name.split(' ');
-          return { ...seller, name, lastName: lastNameParts.join(' ') };
-        });
-        setSellers(formattedSellers);
-        setTotalPages(data.pagination.lastPage + 1);
-      } catch (error: any) {
-        console.error('Erro ao buscar vendedores:', error);
+    fetchSellersData();
+  }, [page]);
+
+  // Atualizar dados quando a janela recupera o foco (quando o usuário volta de outra aba)
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchSellersData();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
+  // Escutar por eventos de criação de vendas
+  useEffect(() => {
+    const handleSaleCreated = () => {
+      console.log('Venda criada detectada, atualizando dados dos vendedores...');
+      fetchSellersData();
+    };
+
+    const handleSaleUpdated = () => {
+      console.log('Venda atualizada detectada, atualizando dados dos vendedores...');
+      fetchSellersData();
+    };
+
+    const handleSaleDeleted = () => {
+      console.log('Venda excluída detectada, atualizando dados dos vendedores...');
+      fetchSellersData();
+    };
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'lastSaleUpdate') {
+        console.log('Atualização de venda detectada via localStorage, atualizando dados...');
+        fetchSellersData();
       }
     };
-    fetchData();
-  }, [page]);
+
+    // Verificar se houve atualizações recentes no localStorage ao carregar a página
+    const checkRecentSales = () => {
+      const lastUpdate = localStorage.getItem('lastSaleUpdate');
+      if (lastUpdate) {
+        const updateTime = parseInt(lastUpdate);
+        const now = Date.now();
+        // Se a última venda foi há menos de 5 minutos, atualizar dados
+        if (now - updateTime < 5 * 60 * 1000) {
+          console.log('Venda recente detectada, atualizando dados...');
+          fetchSellersData();
+        }
+      }
+    };
+
+    window.addEventListener('saleCreated', handleSaleCreated as EventListener);
+    window.addEventListener('saleUpdated', handleSaleUpdated as EventListener);
+    window.addEventListener('saleDeleted', handleSaleDeleted as EventListener);
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Verificar atualizações recentes na primeira carga
+    checkRecentSales();
+
+    return () => {
+      window.removeEventListener('saleCreated', handleSaleCreated as EventListener);
+      window.removeEventListener('saleUpdated', handleSaleUpdated as EventListener);
+      window.removeEventListener('saleDeleted', handleSaleDeleted as EventListener);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
+  // Atualizar dados periodicamente (a cada 30 segundos)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchSellersData();
+    }, 30000); // 30 segundos
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Filtro de vendedores pelo nome ou CPF
   const filteredSellers = sellers.filter(seller =>
@@ -144,12 +264,13 @@ function ReadSellersPage() {
     }
 
     setEditingSeller(prev => {
+      if (!prev) return prev;
       if (name.startsWith('address.')) {
         const addressPart = name.split('.')[1];
         return {
           ...prev,
           address: {
-            ...prev!.address,
+            ...prev.address,
             [addressPart]: formattedValue,
           },
         };
@@ -279,10 +400,30 @@ function ReadSellersPage() {
 
       {deleteSuccessMessage && <div className="success-message">{deleteSuccessMessage}</div>}
 
-      <div className="sellers-list-container">
+      {/* Cabeçalho com botão de atualização */}
+      <div className="list-controls">
+        <div>
+          <h3>Lista de Vendedores {isLoading && <span className="loading-text">(Carregando...)</span>}</h3>
+          {lastUpdate && !isLoading && (
+            <p className="last-update">
+              Última atualização: {lastUpdate.toLocaleTimeString('pt-BR')}
+            </p>
+          )}
+        </div>
+        <button 
+          className="refresh-button" 
+          onClick={refreshSellersData} 
+          disabled={isLoading}
+          title="Atualizar dados dos vendedores"
+        >
+          🔄 Atualizar Estatísticas
+        </button>
+      </div>
+
+      <div className="sellers-list-container">{isLoading && <div className="loading-overlay">Carregando dados...</div>}
         <div className="sellers-list-header">
           <div>Nome</div>
-          <div>Status</div> {/* Você precisará determinar de onde vem esse dado */}
+          <div>Status</div>
           <div>CPF</div>
           <div>Última Venda</div>
           <div>Total Vendas</div>
@@ -296,10 +437,18 @@ function ReadSellersPage() {
                   {seller.name} {seller.lastName}
                 </Link>
               </div>
-              <div>N/A</div> {/* Status não está diretamente na resposta */}
-              <div>{seller.cpf}</div>
-              <div>N/A</div>
-              <div>N/A</div>
+              <div>
+                <span className={`status-badge ${seller.status === 'INATIVO' ? 'status-inactive' : 'status-active'}`}>
+                  {seller.status === 'INATIVO' ? 'Inativo' : 'Ativo'}
+                </span>
+              </div>
+              <div>{formatInput(seller.cpf, '999.999.999-99')}</div>
+              <div>
+                {seller.lastSaleDate ? new Date(seller.lastSaleDate).toLocaleDateString('pt-BR') : 'Nunca'}
+              </div>
+              <div>
+                <span className="sales-count">{seller.totalSales || 0} venda{(seller.totalSales || 0) !== 1 ? 's' : ''}</span>
+              </div>
               <div className="actions-cell">
                 <button className="icon-button delete" onClick={() => openDeleteConfirmation(seller)}><Trash2 size={16} /></button>
                 <button className="icon-button edit" onClick={() => openEditModal(seller.id)}><Pencil size={16} /></button>
@@ -422,7 +571,9 @@ function ReadSellersPage() {
         </span>
         <button onClick={() => setPage(p => Math.min(p + 1, totalPages))} disabled={page === totalPages}>›</button>
         <button onClick={() => setPage(totalPages)} disabled={page === totalPages}>»</button>
-        <button className="update-button" onClick={() => window.location.reload()}>Atualizar</button>
+        <button className="update-button" onClick={refreshSellersData} disabled={isLoading}>
+          {isLoading ? 'Atualizando...' : 'Atualizar'}
+        </button>
       </div>
       <NotificationContainer />
     </div>
