@@ -27,6 +27,7 @@ model Supplier {
   phones    String[]  @db.VarChar(20)
   emails    String[]  @db.VarChar(100)
   cnpj      String    @unique @db.VarChar(18)
+  status    String    @default("ATIVO") @db.VarChar(20) // ATIVO, INATIVO
   addressId Int       @unique @map("idEndereco") // <-- AQUI
   address   Address   @relation("SupplierAddress", fields: [addressId], references: [id])
   products  Product[]
@@ -52,9 +53,9 @@ model Product {
   price       Float
   size        String            @db.VarChar(10)
   color       String            @db.VarChar(30)
-  supplierId  Int               @map("fornecedorID")
+  supplierId  Int?              @map("fornecedorID")
   promotionId Int?
-  supplier    Supplier          @relation(fields: [supplierId], references: [id])
+  supplier    Supplier?         @relation(fields: [supplierId], references: [id])
   promotion   Promotion?        @relation(fields: [promotionId], references: [id])
   stock       Stock?
   orderItems  OrderProduct[]

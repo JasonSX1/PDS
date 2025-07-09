@@ -66,6 +66,9 @@ function ReadSuppliersPage() {
   const [deleteSuccessMessage, setDeleteSuccessMessage] = useState<string>('');
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState<boolean>(false);
   const [supplierToDelete, setSupplierToDelete] = useState<Supplier | null>(null);
+  const [supplierProducts, setSupplierProducts] = useState<any[]>([]);
+  const [productsCount, setProductsCount] = useState<number>(0);
+  const [deleteOption, setDeleteOption] = useState<string>('');
   const [search, setSearch] = useState<string>("");
 
   useEffect(() => {
@@ -251,33 +254,90 @@ function ReadSuppliersPage() {
     }
   };
 
-  const openDeleteConfirmation = (supplier: Supplier) => {
+  const openDeleteConfirmation = async (supplier: Supplier) => {
     setSupplierToDelete(supplier);
+    setDeleteOption('');
+    
+    try {
+      // Busca a contagem de produtos do fornecedor
+      const countResponse = await api.get(`/supplier/${supplier.id}/products/count`);
+      setProductsCount(countResponse.data.count);
+      
+      // Se há produtos, busca a lista deles
+      if (countResponse.data.count > 0) {
+        const productsResponse = await api.get(`/product`, {
+          params: { supplierId: supplier.id }
+        });
+        setSupplierProducts(productsResponse.data.results || []);
+      } else {
+        setSupplierProducts([]);
+      }
+    } catch (error: any) {
+      console.error('Erro ao buscar produtos do fornecedor:', error);
+      setProductsCount(0);
+      setSupplierProducts([]);
+    }
+    
     setIsDeleteConfirmationOpen(true);
   };
 
   const closeDeleteConfirmation = () => {
     setSupplierToDelete(null);
     setIsDeleteConfirmationOpen(false);
+    setDeleteOption('');
+    setProductsCount(0);
+    setSupplierProducts([]);
   };
 
   const handleDeleteSupplier = async () => {
-    if (supplierToDelete) {
+    if (supplierToDelete && deleteOption) {
       try {
-        const response = await api.delete(`/supplier/${supplierToDelete.id}`);
+        let response;
+        let successMessage = '';
+
+        switch (deleteOption) {
+          case 'disable':
+            response = await api.patch(`/supplier/${supplierToDelete.id}/disable`);
+            successMessage = 'Fornecedor desabilitado com sucesso!';
+            break;
+          case 'deleteWithProducts':
+            response = await api.delete(`/supplier/${supplierToDelete.id}/force`);
+            successMessage = 'Fornecedor e produtos excluídos com sucesso!';
+            break;
+          case 'deleteAndDissociate':
+            response = await api.delete(`/supplier/${supplierToDelete.id}/dissociate`);
+            successMessage = 'Fornecedor excluído e produtos desassociados com sucesso!';
+            break;
+          default:
+            alert('Por favor, selecione uma opção.');
+            return;
+        }
 
         if (response.status === 204 || response.status === 200) {
-          const updatedSuppliers = suppliers.filter(s => s.id !== supplierToDelete.id);
-          setSuppliers(updatedSuppliers);
-          setDeleteSuccessMessage('Fornecedor excluído com sucesso!');
+          if (deleteOption === 'disable') {
+            // Atualiza o fornecedor na lista (adiciona status inativo se necessário)
+            const updatedSuppliers = suppliers.map(s => 
+              s.id === supplierToDelete.id 
+                ? { ...s, status: 'INATIVO' } 
+                : s
+            );
+            setSuppliers(updatedSuppliers);
+          } else {
+            // Remove o fornecedor da lista
+            const updatedSuppliers = suppliers.filter(s => s.id !== supplierToDelete.id);
+            setSuppliers(updatedSuppliers);
+          }
+          
+          setDeleteSuccessMessage(successMessage);
           setTimeout(() => setDeleteSuccessMessage(''), 3000);
         } else {
-          console.error('Erro ao excluir fornecedor:', response.data);
-          alert('Erro ao excluir fornecedor.');
+          console.error('Erro ao processar operação:', response.data);
+          alert(response.data?.message || 'Erro ao processar operação.');
         }
       } catch (error: any) {
-        console.error('Erro ao enviar exclusão:', error);
-        alert('Erro ao excluir fornecedor.');
+        console.error('Erro ao processar operação:', error);
+        const errorMessage = error.response?.data?.message || error.message || 'Erro ao processar operação.';
+        alert(errorMessage);
       } finally {
         closeDeleteConfirmation();
       }
@@ -471,15 +531,126 @@ function ReadSuppliersPage() {
 
       {isDeleteConfirmationOpen && supplierToDelete && (
         <div className="delete-confirmation-overlay">
-          <div className="delete-confirmation-modal">
-            <h2>Você realmente deseja excluir este fornecedor?</h2>
-            <p><strong>Nome:</strong> {supplierToDelete.name}</p>
-            <p><strong>CNPJ:</strong> {formatInput(supplierToDelete.cnpj, '99.999.999/9999-99')}</p>
-            <p><strong>Telefones:</strong> {supplierToDelete.phones.map(phone => formatInput(phone, '(99) 99999-9999')).join(', ')}</p>
-            <p><strong>E-mails:</strong> {supplierToDelete.emails.join(', ') || 'N/A'}</p>
-            <div className="delete-confirmation-buttons">
-              <button className="cancel-button" onClick={closeDeleteConfirmation}>Cancelar</button>
-              <button className="delete-button" onClick={handleDeleteSupplier}>Excluir</button>
+          <div className="delete-confirmation-modal advanced">
+            <div className="modal-header">
+              <h2>Gerenciar Fornecedor</h2>
+              <button className="close-button" onClick={closeDeleteConfirmation}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="supplier-info">
+              <p><strong>Fornecedor:</strong> {supplierToDelete.name}</p>
+              <p><strong>CNPJ:</strong> {formatInput(supplierToDelete.cnpj, '99.999.999/9999-99')}</p>
+              <p><strong>Produtos cadastrados:</strong> {productsCount}</p>
+            </div>
+
+            {productsCount > 0 && (
+              <div className="products-list">
+                <h4>Produtos associados:</h4>
+                <div className="products-container">
+                  {supplierProducts.slice(0, 5).map((product, index) => (
+                    <div key={index} className="product-item">
+                      • {product.name} - Estoque: {product.quantity}
+                    </div>
+                  ))}
+                  {supplierProducts.length > 5 && (
+                    <div className="more-products">
+                      ... e mais {supplierProducts.length - 5} produto(s)
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="delete-options">
+              <h3>Escolha uma opção:</h3>
+              
+              <div className="option-group">
+                <label className="option-label">
+                  <input
+                    type="radio"
+                    name="deleteOption"
+                    value="disable"
+                    checked={deleteOption === 'disable'}
+                    onChange={(e) => setDeleteOption(e.target.value)}
+                  />
+                  <div className="option-content">
+                    <strong>Desabilitar fornecedor</strong>
+                    <span>O fornecedor será marcado como inativo, mas os dados serão preservados</span>
+                  </div>
+                </label>
+              </div>
+
+              {productsCount > 0 && (
+                <>
+                  <div className="option-group">
+                    <label className="option-label">
+                      <input
+                        type="radio"
+                        name="deleteOption"
+                        value="deleteAndDissociate"
+                        checked={deleteOption === 'deleteAndDissociate'}
+                        onChange={(e) => setDeleteOption(e.target.value)}
+                      />
+                      <div className="option-content">
+                        <strong>Excluir fornecedor e desassociar produtos</strong>
+                        <span>O fornecedor será excluído e os {productsCount} produto(s) ficarão sem fornecedor</span>
+                      </div>
+                    </label>
+                  </div>
+
+                  <div className="option-group warning">
+                    <label className="option-label">
+                      <input
+                        type="radio"
+                        name="deleteOption"
+                        value="deleteWithProducts"
+                        checked={deleteOption === 'deleteWithProducts'}
+                        onChange={(e) => setDeleteOption(e.target.value)}
+                      />
+                      <div className="option-content">
+                        <strong>Excluir fornecedor e todos os produtos</strong>
+                        <span className="warning-text">⚠️ ATENÇÃO: Isso excluirá permanentemente o fornecedor e todos os {productsCount} produto(s) associados</span>
+                      </div>
+                    </label>
+                  </div>
+                </>
+              )}
+
+              {productsCount === 0 && (
+                <div className="option-group">
+                  <label className="option-label">
+                    <input
+                      type="radio"
+                      name="deleteOption"
+                      value="deleteWithProducts"
+                      checked={deleteOption === 'deleteWithProducts'}
+                      onChange={(e) => setDeleteOption(e.target.value)}
+                    />
+                    <div className="option-content">
+                      <strong>Excluir fornecedor</strong>
+                      <span>O fornecedor será excluído permanentemente (sem produtos associados)</span>
+                    </div>
+                  </label>
+                </div>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <button className="cancel-button" onClick={closeDeleteConfirmation}>
+                Cancelar
+              </button>
+              <button 
+                className={`confirm-button ${deleteOption === 'deleteWithProducts' ? 'danger' : ''}`}
+                onClick={handleDeleteSupplier}
+                disabled={!deleteOption}
+              >
+                {deleteOption === 'disable' && 'Desabilitar'}
+                {deleteOption === 'deleteAndDissociate' && 'Excluir e Desassociar'}
+                {deleteOption === 'deleteWithProducts' && 'Excluir Tudo'}
+                {!deleteOption && 'Selecione uma opção'}
+              </button>
             </div>
           </div>
         </div>

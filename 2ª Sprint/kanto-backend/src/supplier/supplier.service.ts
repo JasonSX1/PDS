@@ -90,6 +90,117 @@ export class SupplierService {
     return await this.repository.update(id, dto);
   }
 
+  async getProductsCount(id: number) {
+    const existingSupplier = await this.repository.findById(id);
+    if (!existingSupplier) {
+      throw new NotFoundException('Fornecedor não encontrado.');
+    }
+
+    const productsCount = await this.prisma.product.count({
+      where: { supplierId: id }
+    });
+
+    const products = await this.prisma.product.findMany({
+      where: { supplierId: id },
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        stock: {
+          select: {
+            quantity: true
+          }
+        }
+      }
+    });
+
+    return {
+      count: productsCount,
+      products: products,
+      supplier: existingSupplier
+    };
+  }
+
+  async disable(id: number) {
+    const existingSupplier = await this.repository.findById(id);
+    if (!existingSupplier) {
+      throw new NotFoundException('Fornecedor não encontrado para desabilitação.');
+    }
+
+    try {
+      return await this.prisma.supplier.update({
+        where: { id },
+        data: { status: 'INATIVO' },
+        include: {
+          address: true
+        }
+      });
+    } catch (error) {
+      console.error('Erro ao desabilitar fornecedor:', error);
+      throw new InternalServerErrorException('Erro ao desabilitar o fornecedor.');
+    }
+  }
+
+  async forceRemove(id: number) {
+    const existingSupplier = await this.repository.findById(id);
+    if (!existingSupplier) {
+      throw new NotFoundException('Fornecedor não encontrado para remoção.');
+    }
+
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        // Primeiro, excluir todos os produtos do fornecedor
+        const products = await tx.product.findMany({
+          where: { supplierId: id },
+          include: { stock: true }
+        });
+
+        // Excluir estoque dos produtos
+        for (const product of products) {
+          if (product.stock) {
+            await tx.stock.delete({
+              where: { productId: product.id }
+            });
+          }
+        }
+
+        // Excluir os produtos
+        await tx.product.deleteMany({
+          where: { supplierId: id }
+        });
+
+        // Excluir o fornecedor
+        return await this.repository.remove(id);
+      });
+    } catch (error) {
+      console.error('Erro ao forçar remoção do fornecedor:', error);
+      throw new InternalServerErrorException('Erro ao excluir o fornecedor e seus produtos.');
+    }
+  }
+
+  async removeAndDissociate(id: number) {
+    const existingSupplier = await this.repository.findById(id);
+    if (!existingSupplier) {
+      throw new NotFoundException('Fornecedor não encontrado para remoção.');
+    }
+
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        // Desassociar todos os produtos do fornecedor
+        await tx.product.updateMany({
+          where: { supplierId: id },
+          data: { supplierId: null }
+        });
+
+        // Excluir o fornecedor
+        return await this.repository.remove(id);
+      });
+    } catch (error) {
+      console.error('Erro ao remover fornecedor e desassociar produtos:', error);
+      throw new InternalServerErrorException('Erro ao excluir o fornecedor e desassociar produtos.');
+    }
+  }
+
   async remove(id: number) {
     const existingSupplier = await this.repository.findById(id);
     if (!existingSupplier) {
@@ -105,7 +216,7 @@ export class SupplierService {
       if (productsCount > 0) {
         throw new BadRequestException(
           `Não é possível excluir o fornecedor "${existingSupplier.name}" pois ele possui ${productsCount} produto(s) cadastrado(s). ` +
-          'Remova ou transfira os produtos para outro fornecedor antes de excluir.'
+          'Use as opções específicas de exclusão disponíveis.'
         );
       }
 

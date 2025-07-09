@@ -45,8 +45,28 @@ export class SupplierController {
     return await this.supplierService.update(Number(id), updateSupplierDto);
   }
 
+  @Get(':id/products-count')
+  async getProductsCount(@Param('id') id: string) {
+    return await this.supplierService.getProductsCount(Number(id));
+  }
+
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return await this.supplierService.remove(Number(id));
+  }
+
+  @Delete(':id/force')
+  async forceRemove(@Param('id') id: string) {
+    return await this.supplierService.forceRemove(Number(id));
+  }
+
+  @Delete(':id/dissociate')
+  async removeAndDissociate(@Param('id') id: string) {
+    return await this.supplierService.removeAndDissociate(Number(id));
+  }
+
+  @Patch(':id/disable')
+  async disable(@Param('id') id: string) {
+    return await this.supplierService.disable(Number(id));
   }
 }

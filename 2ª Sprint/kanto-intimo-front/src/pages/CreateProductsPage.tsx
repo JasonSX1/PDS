@@ -118,12 +118,18 @@ export default function CreateProductsPage() {
             onChange={(newValue) => {
               if (newValue) {
                 setFormData(prev => ({ ...prev, size: newValue.value }));
+                // Adiciona a nova opção de tamanho se não existir
                 if (!sizeOptions.some(opt => opt.value === newValue.value)) {
                   setSizeOptions(prev => [...prev, newValue]);
                 }
               } else {
                 setFormData(prev => ({ ...prev, size: "" }));
               }
+            }}
+            onCreateOption={(inputValue) => {
+              const newOption = { value: inputValue, label: inputValue };
+              setSizeOptions(prev => [...prev, newOption]);
+              setFormData(prev => ({ ...prev, size: inputValue }));
             }}
             value={formData.size ? { value: formData.size, label: formData.size } : null}
             placeholder="Selecione ou crie um tamanho"
@@ -136,12 +142,18 @@ export default function CreateProductsPage() {
             onChange={(newValue) => {
               if (newValue) {
                 setFormData(prev => ({ ...prev, color: newValue.value }));
+                // Adiciona a nova opção de cor se não existir
                 if (!colorOptions.some(opt => opt.value === newValue.value)) {
                   setColorOptions(prev => [...prev, newValue]);
                 }
               } else {
                 setFormData(prev => ({ ...prev, color: "" }));
               }
+            }}
+            onCreateOption={(inputValue) => {
+              const newOption = { value: inputValue, label: inputValue };
+              setColorOptions(prev => [...prev, newOption]);
+              setFormData(prev => ({ ...prev, color: inputValue }));
             }}
             value={formData.color ? { value: formData.color, label: formData.color } : null}
             placeholder="Selecione ou crie uma cor"
