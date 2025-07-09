@@ -66,6 +66,7 @@ function ReadClientsPage() {
   const [deleteSuccessMessage, setDeleteSuccessMessage] = useState<string>('');
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState<boolean>(false);
   const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
+  const [search, setSearch] = useState<string>("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -80,6 +81,12 @@ function ReadClientsPage() {
     };
     fetchData();
   }, [page]);
+
+  // Filtro de clientes pelo nome ou CPF
+  const filteredClients = clients.filter(client =>
+    client.name.toLowerCase().includes(search.toLowerCase()) ||
+    client.cpf.includes(search)
+  );
 
   const openEditModal = async (clientId: number) => {
     try {
@@ -214,6 +221,18 @@ function ReadClientsPage() {
         <Link to="/clients/create" className="clients-tab">Cadastrar Cliente</Link>
         <Link to="/clients" className="clients-tab active">Visualizar Clientes</Link>
       </div>
+
+      {/* Input de pesquisa */}
+      <div style={{ margin: '16px 0', display: 'flex', justifyContent: 'center' }}>
+        <input
+          type="text"
+          placeholder="Pesquisar cliente pelo nome ou CPF..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ width: 320, padding: 8, borderRadius: 6, border: '1px solid #d1d5db', fontSize: 15 }}
+        />
+      </div>
+
       {deleteSuccessMessage && <div className="success-message">{deleteSuccessMessage}</div>}
       <div className="clients-list-container">
         <div className="clients-list-header">
@@ -225,8 +244,8 @@ function ReadClientsPage() {
           <div>Estado</div>
           <div>Ações</div>
         </div>
-        {clients.length > 0 ? (
-          clients.map((client) => (
+        {filteredClients.length > 0 ? (
+          filteredClients.map((client) => (
             <div key={client.id} className="clients-list-item">
               <div>{client.name}</div>
               <div>{client.email}</div>
@@ -242,7 +261,7 @@ function ReadClientsPage() {
             </div>
           ))
         ) : (
-          <div className="no-clients">Nenhum cliente cadastrado.</div>
+          <div className="no-clients">Nenhum cliente encontrado.</div>
         )}
       </div>
       {isEditModalOpen && editingClient && (

@@ -99,7 +99,6 @@ model Sale {
   clientId      Int
   sellerId      Int
   date          DateTime
-  status        String        @db.VarChar(50)
   total         Float
   observations  String?       @db.VarChar(500)
   client        Client        @relation(fields: [clientId], references: [id])

@@ -128,7 +128,6 @@ export class SaleRepository {
         clientId: dto.clientId,
         sellerId: dto.sellerId,
         date: dto.date ? new Date(dto.date) : new Date(),
-        status: dto.status,
         total: dto.total,
         observations: dto.observations,
         items: {
@@ -177,7 +176,6 @@ export class SaleRepository {
         clientId: dto.clientId,
         sellerId: dto.sellerId,
         date: dto.date ? new Date(dto.date) : undefined,
-        status: dto.status,
         total: dto.total,
         observations: dto.observations,
         ...(dto.items && {

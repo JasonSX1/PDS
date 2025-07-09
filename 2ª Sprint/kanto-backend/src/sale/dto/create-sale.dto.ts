@@ -25,10 +25,6 @@ export class CreateSaleDto {
   sellerId: number;
 
   @IsNotEmpty()
-  @IsString()
-  status: string;
-
-  @IsNotEmpty()
   @IsNumber()
   total: number;
 

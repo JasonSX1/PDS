@@ -89,9 +89,10 @@ function ReadSellersPage() {
     fetchData();
   }, [page]);
 
-  // Filtro de vendedores pelo nome
+  // Filtro de vendedores pelo nome ou CPF
   const filteredSellers = sellers.filter(seller =>
-    (`${seller.name} ${seller.lastName}`.toLowerCase().includes(search.toLowerCase()))
+    (`${seller.name} ${seller.lastName}`.toLowerCase().includes(search.toLowerCase())) ||
+    seller.cpf.includes(search)
   );
 
   const openEditModal = async (sellerId: number) => {
@@ -258,7 +259,7 @@ function ReadSellersPage() {
       <div style={{ margin: '16px 0', display: 'flex', justifyContent: 'center' }}>
         <input
           type="text"
-          placeholder="Pesquisar vendedor pelo nome..."
+          placeholder="Pesquisar vendedor pelo nome ou CPF..."
           value={search}
           onChange={e => setSearch(e.target.value)}
           style={{ width: 320, padding: 8, borderRadius: 6, border: '1px solid #d1d5db', fontSize: 15 }}

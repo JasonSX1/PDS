@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import '../styles/ReadSalesPage.css';
 import Header from "../components/ui/header";
 import Navbar from "../components/ui/navbar";
-import { Trash2, Pencil, MoreVertical, X, Eye, Plus } from 'lucide-react';
+import { Trash2, Pencil, X, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../lib/axiosConfig';
 
@@ -25,7 +25,6 @@ interface Sale {
   clientId: number;
   sellerId: number;
   date: string;
-  status: string;
   total: number;
   observations?: string;
   client: {
@@ -88,6 +87,7 @@ export default function ReadSalesPage() {
   const [deleteSuccessMessage, setDeleteSuccessMessage] = useState<string>('');
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState<boolean>(false);
   const [saleToDelete, setSaleToDelete] = useState<Sale | null>(null);
+  const [search, setSearch] = useState<string>("");
   
   // Dados para edição
   const [clients, setClients] = useState<Client[]>([]);
@@ -114,6 +114,11 @@ export default function ReadSalesPage() {
     api.get("/seller/pages").then(res => setSellers(res.data.results || []));
     api.get("/product/pages").then(res => setProducts(res.data.results || []));
   }, []);
+
+  // Filtro de vendas pelo nome do cliente
+  const filteredSales = sales.filter(sale =>
+    sale.client.name.toLowerCase().includes(search.toLowerCase())
+  );
 
   const openDetailsModal = (sale: Sale) => {
     setSelectedSale(sale);
@@ -150,7 +155,7 @@ export default function ReadSalesPage() {
   const handleSaveEdit = async () => {
     if (editingSale) {
       setEditError('');
-      if (!editingSale.clientId || !editingSale.sellerId || !editingSale.status || !editingSale.date) {
+      if (!editingSale.clientId || !editingSale.sellerId || !editingSale.date) {
         setEditError("Preencha todos os campos obrigatórios");
         return;
       }
@@ -158,7 +163,6 @@ export default function ReadSalesPage() {
         const payload = {
           clientId: Number(editingSale.clientId),
           sellerId: Number(editingSale.sellerId),
-          status: editingSale.status,
           total: editingSale.total,
           date: editingSale.date,
           observations: editingSale.observations,
@@ -219,15 +223,6 @@ export default function ReadSalesPage() {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Concluída': return '#22c55e';
-      case 'Pendente': return '#f59e0b';
-      case 'Cancelada': return '#ef4444';
-      default: return '#6b7280';
-    }
-  };
-
   return (
     <div className="read-sales-container">
       <Header />
@@ -238,6 +233,17 @@ export default function ReadSalesPage() {
         <Link to="/sales" className="sales-tab active">Visualizar Vendas</Link>
       </div>
 
+      {/* Input de pesquisa */}
+      <div style={{ margin: '16px 0', display: 'flex', justifyContent: 'center' }}>
+        <input
+          type="text"
+          placeholder="Pesquisar venda pelo nome do cliente..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ width: 320, padding: 8, borderRadius: 6, border: '1px solid #d1d5db', fontSize: 15 }}
+        />
+      </div>
+
       {deleteSuccessMessage && <div className="success-message">{deleteSuccessMessage}</div>}
 
       <div className="sales-list-container">
@@ -245,27 +251,18 @@ export default function ReadSalesPage() {
           <div>Data</div>
           <div>Cliente</div>
           <div>Vendedor</div>
-          <div>Status</div>
           <div>Total</div>
           <div>Itens</div>
           <div>Ações</div>
         </div>
-        {sales.length > 0 ? (
-          sales.map((sale) => (
+        {filteredSales.length > 0 ? (
+          filteredSales.map((sale) => (
             <div key={sale.id} className="sales-list-item">
               <div>{formatDate(sale.date)}</div>
               <div>{sale.client.name}</div>
               <div>{sale.seller.name}</div>
-              <div>
-                <span 
-                  className="status-badge"
-                  style={{ backgroundColor: getStatusColor(sale.status) }}
-                >
-                  {sale.status}
-                </span>
-              </div>
               <div>R$ {sale.total.toFixed(2)}</div>
-              <div>{sale.items.length} produtos</div>
+              <div>{sale.items.length}</div>
               <div className="actions-cell">
                 <button className="icon-button view" onClick={() => openDetailsModal(sale)}>
                   <Eye size={16} />
@@ -280,7 +277,7 @@ export default function ReadSalesPage() {
             </div>
           ))
         ) : (
-          <div className="no-sales">Nenhuma venda cadastrada.</div>
+          <div className="no-sales">Nenhuma venda encontrada.</div>
         )}
       </div>
 
@@ -298,15 +295,6 @@ export default function ReadSalesPage() {
               <div className="sale-info">
                 <div className="info-row">
                   <strong>Data:</strong> {formatDate(selectedSale.date)}
-                </div>
-                <div className="info-row">
-                  <strong>Status:</strong> 
-                  <span 
-                    className="status-badge"
-                    style={{ backgroundColor: getStatusColor(selectedSale.status) }}
-                  >
-                    {selectedSale.status}
-                  </span>
                 </div>
                 <div className="info-row">
                   <strong>Cliente:</strong> {selectedSale.client.name} ({selectedSale.client.email})
@@ -377,11 +365,6 @@ export default function ReadSalesPage() {
               </div>
 
               <div className="form-row" style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 12 }}>
-                <select name="status" value={editingSale.status} onChange={handleEditInputChange} required style={{ flex: 1, minWidth: 180 }}>
-                  <option value="Pendente">Pendente</option>
-                  <option value="Concluída">Concluída</option>
-                  <option value="Cancelada">Cancelada</option>
-                </select>
                 <input
                   type="date"
                   name="date"
@@ -479,7 +462,6 @@ export default function ReadSalesPage() {
             <p><strong>Cliente:</strong> {saleToDelete.client.name}</p>
             <p><strong>Vendedor:</strong> {saleToDelete.seller.name}</p>
             <p><strong>Total:</strong> R$ {saleToDelete.total.toFixed(2)}</p>
-            <p><strong>Status:</strong> {saleToDelete.status}</p>
             <div className="delete-confirmation-buttons">
               <button className="cancel-button" onClick={closeDeleteConfirmation}>
                 Cancelar

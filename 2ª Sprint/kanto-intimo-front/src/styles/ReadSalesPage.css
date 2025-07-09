@@ -79,16 +79,6 @@
   border-bottom: none;
 }
 
-.status-badge {
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: white;
-  text-align: center;
-  min-width: 80px;
-}
-
 .actions-cell {
   display: flex;
   gap: 8px;

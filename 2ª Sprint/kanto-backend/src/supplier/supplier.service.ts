@@ -8,10 +8,14 @@ import { SupplierRepository } from './repository/supplier.repository';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
 import { UpdateSupplierDto } from './dto/update-supplier.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class SupplierService {
-  constructor(private readonly repository: SupplierRepository) {}
+  constructor(
+    private readonly repository: SupplierRepository,
+    private readonly prisma: PrismaService
+  ) {}
 
   async paginate(
     page: number,
@@ -91,6 +95,38 @@ export class SupplierService {
     if (!existingSupplier) {
       throw new NotFoundException('Fornecedor não encontrado para remoção.');
     }
-    return await this.repository.remove(id);
+
+    try {
+      // Verificar se o fornecedor tem produtos associados
+      const productsCount = await this.prisma.product.count({
+        where: { supplierId: id }
+      });
+
+      if (productsCount > 0) {
+        throw new BadRequestException(
+          `Não é possível excluir o fornecedor "${existingSupplier.name}" pois ele possui ${productsCount} produto(s) cadastrado(s). ` +
+          'Remova ou transfira os produtos para outro fornecedor antes de excluir.'
+        );
+      }
+
+      return await this.repository.remove(id);
+    } catch (error) {
+      console.error('Erro ao remover fornecedor:', error);
+
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2003') {
+          throw new BadRequestException(
+            `Não é possível excluir o fornecedor "${existingSupplier.name}" pois ele possui relacionamentos ativos. ` +
+            'Verifique se há produtos ou outros dados associados a este fornecedor.'
+          );
+        }
+      }
+
+      throw new InternalServerErrorException('Erro ao excluir o fornecedor.');
+    }
   }
 }

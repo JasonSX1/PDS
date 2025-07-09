@@ -39,7 +39,6 @@ export default function CreateSalesPage() {
   const [formData, setFormData] = useState({
     clientId: "",
     sellerId: "",
-    status: "Pendente",
     total: 0,
     date: new Date().toISOString().split('T')[0], // Data atual como padrão
     observations: ""
@@ -121,11 +120,24 @@ export default function CreateSalesPage() {
       return;
     }
 
+    // Validar estoque
+    for (const item of saleItems) {
+      const product = products.find(p => p.id === item.productId);
+      if (product && product.stock) {
+        if (product.stock.quantity < item.quantity) {
+          setError(`Estoque insuficiente para o produto "${product.name}". Disponível: ${product.stock.quantity}, Solicitado: ${item.quantity}`);
+          return;
+        }
+      } else if (product) {
+        setError(`Produto "${product.name}" não possui estoque cadastrado.`);
+        return;
+      }
+    }
+
     try {
       const payload = {
         clientId: Number(formData.clientId),
         sellerId: Number(formData.sellerId),
-        status: formData.status,
         total: formData.total,
         date: formData.date,
         observations: formData.observations,
@@ -143,7 +155,6 @@ export default function CreateSalesPage() {
       setFormData({ 
         clientId: "", 
         sellerId: "", 
-        status: "Pendente", 
         total: 0, 
         date: new Date().toISOString().split('T')[0],
         observations: ""
@@ -180,12 +191,6 @@ export default function CreateSalesPage() {
         </div>
 
         <div className="form-row">
-          <select name="status" value={formData.status} onChange={handleChange} required>
-            <option value="Pendente">Pendente</option>
-            <option value="Concluída">Concluída</option>
-            <option value="Cancelada">Cancelada</option>
-          </select>
-
           <input
             type="date"
             name="date"
@@ -230,15 +235,9 @@ export default function CreateSalesPage() {
                 required
               />
               
-              <input
-                type="number"
-                placeholder="Preço Unitário"
-                value={item.unitPrice}
-                onChange={(e) => updateItem(index, 'unitPrice', Number(e.target.value))}
-                min="0"
-                step="0.01"
-                required
-              />
+              <span className="unit-price">
+                R$ {item.unitPrice.toFixed(2)}
+              </span>
               
               <span className="item-total">
                 R$ {(item.quantity * item.unitPrice).toFixed(2)}

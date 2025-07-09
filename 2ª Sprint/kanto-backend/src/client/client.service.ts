@@ -8,10 +8,14 @@ import { ClientRepository } from './repository/client.repository';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class ClientService {
-  constructor(private readonly repository: ClientRepository) {}
+  constructor(
+    private readonly repository: ClientRepository,
+    private readonly prisma: PrismaService
+  ) {}
 
   async paginate(
     page: number,
@@ -83,6 +87,38 @@ export class ClientService {
     if (!existingClient) {
       throw new NotFoundException('Cliente não encontrado para remoção.');
     }
-    return await this.repository.remove(id);
+
+    try {
+      // Verificar se o cliente tem vendas associadas
+      const salesCount = await this.prisma.sale.count({
+        where: { clientId: id }
+      });
+
+      if (salesCount > 0) {
+        throw new BadRequestException(
+          `Não é possível excluir o cliente "${existingClient.name}" pois ele possui ${salesCount} venda(s) registrada(s). ` +
+          'Remova as vendas associadas antes de excluir o cliente.'
+        );
+      }
+
+      return await this.repository.remove(id);
+    } catch (error) {
+      console.error('Erro ao remover cliente:', error);
+
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2003') {
+          throw new BadRequestException(
+            `Não é possível excluir o cliente "${existingClient.name}" pois ele possui relacionamentos ativos. ` +
+            'Verifique se há vendas ou outros dados associados a este cliente.'
+          );
+        }
+      }
+
+      throw new InternalServerErrorException('Erro ao excluir o cliente.');
+    }
   }
 } 

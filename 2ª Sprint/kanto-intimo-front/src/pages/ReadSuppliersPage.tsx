@@ -284,9 +284,10 @@ function ReadSuppliersPage() {
     }
   };
 
-  // Filtro de fornecedores pelo nome
+  // Filtro de fornecedores pelo nome ou CNPJ
   const filteredSuppliers = suppliers.filter(supplier =>
-    supplier.name.toLowerCase().includes(search.toLowerCase())
+    supplier.name.toLowerCase().includes(search.toLowerCase()) ||
+    supplier.cnpj.includes(search)
   );
 
   return (
@@ -303,7 +304,7 @@ function ReadSuppliersPage() {
       <div style={{ margin: '16px 0', display: 'flex', justifyContent: 'center' }}>
         <input
           type="text"
-          placeholder="Pesquisar fornecedor pelo nome..."
+          placeholder="Pesquisar fornecedor pelo nome ou CNPJ..."
           value={search}
           onChange={e => setSearch(e.target.value)}
           style={{ width: 320, padding: 8, borderRadius: 6, border: '1px solid #d1d5db', fontSize: 15 }}
