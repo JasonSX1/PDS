@@ -19,7 +19,6 @@ interface Product {
   quantity: number;
   supplier: { id: number; name: string } | null;
   supplierId?: number | null;
-  // Removido: category e promotion
 }
 
 interface ApiResponse {
@@ -125,7 +124,6 @@ export default function ReadProductsPage() {
           color: editingProduct.color,
           quantity: Number(editingProduct.quantity),
           supplierId: editingProduct.supplierId || editingProduct.supplier?.id || null,
-          // Removido: categoryId e promotionId
         };
         const response = await api.patch(`/product/${editingProduct.id}`, payload);
         if (response.status === 200) {
