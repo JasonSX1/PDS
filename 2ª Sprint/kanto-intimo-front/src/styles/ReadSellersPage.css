@@ -48,6 +48,10 @@
   font-size: 0.875rem; /* Tamanho da fonte semelhante ao da homepage */
 }
 
+.sellers-list-header > div:last-child {
+  text-align: right;
+}
+
 .sellers-list-header div {
   padding-right: 10px;
 }

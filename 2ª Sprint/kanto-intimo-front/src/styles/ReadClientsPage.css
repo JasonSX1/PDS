@@ -53,6 +53,10 @@
   font-weight: 600;
   font-size: 14px;
 }
+
+.clients-list-header > div:last-child {
+  text-align: right;
+}
 .clients-list-item {
   display: grid;
   grid-template-columns: 2fr 2fr 1.5fr 1.5fr 1.5fr 1fr 1fr;
@@ -71,7 +75,7 @@
 .actions-cell {
   display: flex;
   gap: 8px;
-  justify-content: flex-start;
+  justify-content: flex-end;
 }
 .icon-button {
   background: none;

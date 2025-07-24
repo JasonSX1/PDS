@@ -29,58 +29,166 @@
   padding: 24px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  max-width: 800px;
+  max-width: 1000px;
+  min-width: 800px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow-x: auto;
 }
 
 .form-row {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-start;
 }
 
 .form-row select {
   flex: 1;
+  min-width: 200px;
 }
 
 .sale-form select,
-.sale-form input {
+.sale-form input,
+.sale-form textarea {
   padding: 12px;
   border: 1px solid #d4d4d8;
   border-radius: 6px;
   font-size: 14px;
   box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.sale-form select:focus,
+.sale-form input:focus,
+.sale-form textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.sale-form textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
+
+/* Campo de data com ícone de calendário */
+.date-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 300px;
+}
+
+.date-input-container input[type="date"] {
+  padding: 12px 40px 12px 12px;
+  border: 1px solid #d4d4d8;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.date-input-container input[type="date"]:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.1);
+}
+
+.date-input-container input[type="date"]:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.calendar-icon {
+  position: absolute;
+  right: 12px;
+  color: #6b7280;
+  cursor: pointer;
+  z-index: 2;
+  transition: color 0.2s;
+}
+
+.calendar-icon:hover {
+  color: #3b82f6;
 }
 
 .items-section {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  overflow-x: auto;
 }
 
 .items-section label {
   font-weight: 600;
   font-size: 16px;
   color: #374151;
+  margin-bottom: 8px;
+}
+
+/* Cabeçalhos da tabela de produtos */
+.items-header {
+  display: grid;
+  grid-template-columns: 3fr 0.6fr 1.2fr 1.2fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  background-color: #f3f4f6;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.items-header > div:nth-child(3),
+.items-header > div:nth-child(4) {
+  text-align: center;
 }
 
 .item-row {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  grid-template-columns: 3fr 0.6fr 1.2fr 1.2fr auto;
   gap: 12px;
   align-items: center;
   padding: 12px;
   background-color: #f9fafb;
   border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.quantity-input {
+  max-width: 80px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.unit-price,
+.item-total {
+  font-weight: 600;
+  text-align: center;
+  padding: 6px 4px;
+  border-radius: 4px;
+  font-size: 13px;
+  word-break: break-word;
+  overflow: hidden;
+}
+
+.unit-price {
+  color: #3b82f6;
+  background-color: #eff6ff;
+  border: 1px solid #dbeafe;
 }
 
 .item-total {
-  font-weight: 600;
   color: #059669;
-  min-width: 80px;
-  text-align: right;
+  background-color: #ecfdf5;
+  border: 1px solid #d1fae5;
 }
 
 .remove-button {
@@ -162,4 +270,78 @@
 .submit-button:disabled {
   background-color: #9ca3af;
   cursor: not-allowed;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .sale-form {
+    margin: 0 16px;
+    padding: 16px;
+  }
+  
+  .form-row {
+    flex-direction: column;
+  }
+  
+  .form-row select {
+    min-width: unset;
+  }
+  
+  .date-input-container {
+    max-width: 100%;
+  }
+  
+  .items-header,
+  .item-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .items-header > div,
+  .item-row > * {
+    text-align: left;
+  }
+  
+  .items-header > div::before {
+    content: attr(data-label) ": ";
+    font-weight: bold;
+    display: none;
+  }
+  
+  .item-row > *:not(:last-child)::before {
+    font-weight: bold;
+    margin-right: 8px;
+    color: #6b7280;
+  }
+  
+  .item-row > select::before { content: "Produto: "; }
+  .item-row > input::before { content: "Quantidade: "; }
+  .item-row > .unit-price::before { content: "Preço Unitário: "; }
+  .item-row > .item-total::before { content: "Preço Total: "; }
+}
+
+/* Responsividade para telas pequenas */
+@media (max-width: 768px) {
+  .sale-form {
+    min-width: auto;
+    margin: 0 12px;
+    padding: 16px;
+  }
+
+  .items-header,
+  .item-row {
+    grid-template-columns: 2.5fr 0.5fr 1fr 1fr auto;
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .quantity-input {
+    max-width: 60px;
+  }
+
+  .unit-price,
+  .item-total {
+    font-size: 12px;
+    padding: 4px 2px;
+  }
 } 

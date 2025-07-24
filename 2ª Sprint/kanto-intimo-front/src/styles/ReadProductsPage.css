@@ -45,7 +45,7 @@
 }
 .products-list-header {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 2fr 2fr 2fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 2fr 1fr;
   gap: 16px;
   padding: 16px;
   background-color: #f8fafc;
@@ -53,9 +53,13 @@
   font-weight: 600;
   font-size: 14px;
 }
+
+.products-list-header > div:last-child {
+  text-align: right;
+}
 .products-list-item {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 2fr 2fr 2fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 2fr 1fr;
   gap: 16px;
   padding: 16px;
   border-bottom: 1px solid #f1f5f9;

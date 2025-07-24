@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import '../styles/ReadSupp    try {
-        const response = await api.get(`/supplier/pages`);
-        const data: ApiResponse = response.data;
-        setSellers(data.results);
-        setTotalPages(data.pagination.lastPage + 1);
-      } catch (error: any) {.css';
+import '../styles/ReadSuppliersPage.css';
 import Header from "../components/ui/header";
 import Navbar from "../components/ui/navbar";
 import { Trash2, Pencil, MoreVertical, X, Plus } from 'lucide-react';

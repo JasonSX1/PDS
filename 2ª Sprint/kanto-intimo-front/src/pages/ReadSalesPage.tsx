@@ -384,6 +384,7 @@ export default function ReadSalesPage() {
               <h2>Detalhes da Venda #{selectedSale.id}</h2>
               <button className="close-button" onClick={closeDetailsModal}>
                 <X size={20} />
+                <span style={{ marginLeft: '8px' }}>Fechar</span>
               </button>
             </div>
             <div className="details-modal-body">
@@ -413,26 +414,42 @@ export default function ReadSalesPage() {
               </div>
 
               <div className="items-section">
-                <h3>Produtos da Venda</h3>
-                <div className="items-table">
-                  <div className="items-header">
-                    <div>Produto</div>
-                    <div>Tamanho</div>
-                    <div>Cor</div>
-                    <div>Qtd</div>
-                    <div>Preço Unit.</div>
-                    <div>Subtotal</div>
-                  </div>
-                  {selectedSale.items.map((item, index) => (
-                    <div key={index} className="item-row">
-                      <div>{item.product.name}</div>
-                      <div>{item.product.size}</div>
-                      <div>{item.product.color}</div>
-                      <div>{item.quantity}</div>
-                      <div>R$ {item.unitPrice.toFixed(2)}</div>
-                      <div>R$ {(item.quantity * item.unitPrice).toFixed(2)}</div>
-                    </div>
-                  ))}
+                <h3>Itens do Pedido</h3>
+                <table className="items-table">
+                  <thead>
+                    <tr>
+                      <th>Produto</th>
+                      <th>Quantidade</th>
+                      <th>Preço Unitário</th>
+                      <th>Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedSale.items.map((item, index) => (
+                      <tr key={index}>
+                        <td>
+                          <div className="product-name">{item.product.name}</div>
+                          <div className="product-details">
+                            Tamanho: {item.product.size} | Cor: {item.product.color}
+                          </div>
+                        </td>
+                        <td className="quantity-cell">{item.quantity}</td>
+                        <td className="price-cell">R$ {item.unitPrice.toFixed(2)}</td>
+                        <td className="subtotal-cell">
+                          R$ {(item.quantity * item.unitPrice).toFixed(2)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                
+                <div className="items-summary">
+                  <span className="items-count-summary">
+                    Total de {selectedSale.items.length} produto{selectedSale.items.length !== 1 ? 's' : ''}
+                  </span>
+                  <span className="total-summary">
+                    Total: R$ {selectedSale.total.toFixed(2)}
+                  </span>
                 </div>
               </div>
             </div>

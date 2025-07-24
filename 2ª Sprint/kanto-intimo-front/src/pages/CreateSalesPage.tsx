@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../styles/CreateSalesPage.css";
 import Header from "../components/ui/header";
 import Navbar from "../components/ui/navbar";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Calendar } from "lucide-react";
 import api from "../lib/axiosConfig";
 import { useNotification } from '../components/ui/notification';
 
@@ -37,7 +37,7 @@ interface SaleItem {
 }
 
 export default function CreateSalesPage() {
-  const { showSuccess, showError, NotificationContainer } = useNotification();
+  const { showSuccess, NotificationContainer } = useNotification();
   const [formData, setFormData] = useState({
     clientId: "",
     sellerId: "",
@@ -102,6 +102,13 @@ export default function CreateSalesPage() {
     const total = saleItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
     setFormData(prev => ({ ...prev, total }));
   }, [saleItems]);
+
+  const handleCalendarClick = () => {
+    const dateInput = document.querySelector('input[name="date"]') as HTMLInputElement;
+    if (dateInput) {
+      dateInput.showPicker();
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -203,13 +210,16 @@ export default function CreateSalesPage() {
         </div>
 
         <div className="form-row">
-          <input
-            type="date"
-            name="date"
-            value={formData.date}
-            onChange={handleChange}
-            required
-          />
+          <div className="date-input-container">
+            <input
+              type="date"
+              name="date"
+              value={formData.date}
+              onChange={handleChange}
+              required
+            />
+            <Calendar size={20} className="calendar-icon" onClick={handleCalendarClick} />
+          </div>
         </div>
 
         <textarea
@@ -222,6 +232,16 @@ export default function CreateSalesPage() {
 
         <div className="items-section">
           <label>Produtos da Venda</label>
+          
+          {/* Cabeçalhos das colunas */}
+          <div className="items-header">
+            <div>Produto</div>
+            <div>Quantidade</div>
+            <div>Preço Unitário</div>
+            <div>Preço Total</div>
+            <div>Ações</div>
+          </div>
+          
           {saleItems.map((item, index) => (
             <div key={index} className="item-row">
               <select
@@ -240,20 +260,21 @@ export default function CreateSalesPage() {
               
               <input
                 type="number"
-                placeholder="Quantidade"
+                className="quantity-input"
+                placeholder="Qtd"
                 value={item.quantity}
                 onChange={(e) => updateItem(index, 'quantity', Number(e.target.value))}
                 min="1"
                 required
               />
               
-              <span className="unit-price">
+              <div className="unit-price">
                 R$ {item.unitPrice.toFixed(2)}
-              </span>
+              </div>
               
-              <span className="item-total">
+              <div className="item-total">
                 R$ {(item.quantity * item.unitPrice).toFixed(2)}
-              </span>
+              </div>
               
               <button
                 type="button"
