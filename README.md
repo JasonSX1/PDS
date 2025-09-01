@@ -3,7 +3,7 @@
 Sistema de Gestão Empresarial (ERP) desenvolvido para a loja Kanto Íntimo, especializada em lingerie e moda íntima. O sistema oferece controle completo de vendas, estoque, clientes, fornecedores e vendedores.
 
 <div align="center">
-  <img src="https://private-user-images.githubusercontent.com/80845484/464476207-82918199-e31a-4b2d-8ba8-84f4901469a1.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NTIxMTcxMzIsIm5iZiI6MTc1MjExNjgzMiwicGF0aCI6Ii84MDg0NTQ4NC80NjQ0NzYyMDctODI5MTgxOTktZTMxYS00YjJkLThiYTgtODRmNDkwMTQ2OWExLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA3MTAlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwNzEwVDAzMDcxMlomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTdkMGNiMTYxZmZiYzBmODY2OGE5ZTdjNzA3ZWJjYTJjZjU0ODdjZWM1MTc1ODFjMmY2Njk3NWE5N2YyYTliYTMmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.MwBpGlEq_yk1IkAIs-cBlbvNOJalno30-7FSVm9LUXA" alt="ERP Kanto Íntimo"/>
+  <img src="https://private-user-images.githubusercontent.com/80845484/464476207-82918199-e31a-4b2d-8ba8-84f4901469a1.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NTY3Mzc2ODcsIm5iZiI6MTc1NjczNzM4NywicGF0aCI6Ii84MDg0NTQ4NC80NjQ0NzYyMDctODI5MTgxOTktZTMxYS00YjJkLThiYTgtODRmNDkwMTQ2OWExLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA5MDElMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwOTAxVDE0MzYyN1omWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTAzMjUxMGNhMzdiODU2YmY0OTM2MWQ2NDU2NmFiYTI4NDY1ZWU4ZGQyMGQxZWQ0YWY2MmQ2NTQ2MjZkZDVkZDMmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.VU6Y1Jb9TE686wqzMGWson3Cxyuj-56QfS7ga1_s-lw"/>
 </div>
 
 ## 🎯 Visão Geral
@@ -278,12 +278,6 @@ npm run dev
 ## 🤝 Contribuidores
 
 Este projeto foi desenvolvido como parte da disciplina de **Análise e Modelagem de Sistemas** no 5º semestre do curso de Sistemas de Informação.
-
-### Equipe de Desenvolvimento
-- **David Macedo**
-- **Geison de Oliveira**
-- **Igor de Eça**
-- **Wendel dos Santos**
 
 ### Professor Orientador
 - **Crijina Chagas Flores** - Disciplina: Análise e Modelagem de Sistemas
