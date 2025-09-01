@@ -49,7 +49,6 @@ O ERP Kanto Íntimo é uma solução completa de gestão empresarial desenvolvid
 - **Notificações Customizadas**: Substituição de alerts nativos
 - **Feedback Visual**: Confirmações de sucesso e erro
 - **Persistência**: Notificações com duração configurável
-- **Responsividade**: Adaptação a diferentes telas
 
 ## 🚀 Tecnologias Utilizadas
 
@@ -207,7 +206,6 @@ npm run dev
 - **DRY (Don't Repeat Yourself)**: Evitar duplicação de código
 - **SOLID**: Princípios de orientação a objetos
 - **Clean Code**: Código legível e autodocumentado
-- **Responsividade**: Interface adaptável
 
 ### Metodologia Ágil
 
